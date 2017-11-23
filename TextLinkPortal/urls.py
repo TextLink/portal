@@ -18,16 +18,26 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.decorators.csrf import csrf_exempt
 
 from portal import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^hello/', views.hello_html, name='hello_html'),
     url(r'^home/', views.home, name='home'),
-    url(r'^upload/simple/$', views.simple_upload, name='simple_upload'),
-    url(r'^upload/form/$', views.model_form_upload, name='model_form_upload'),
-
+    url(r'^get_connectives_wrt_language', csrf_exempt(views.get_connectives_wrt_language),
+        name='get_connectives_wrt_language'),
+    url(r'^get_sense_wrt_connective', csrf_exempt(views.get_senses_wrt_connective),
+        name='get_senses_wrt_connective'),
+    url(r'^get_senses_wrt_language', csrf_exempt(views.get_senses_wrt_language),
+        name='get_senses_wrt_language'),
+    url(r'^get_connectives_wrt_sense', csrf_exempt(views.get_connectives_wrt_sense),
+        name='get_connectives_wrt_sense'),
+    url(r'^query$', views.query, name='query'),
+    url(r'^upload/model/$', views.model_form_upload, name='model_form_upload.html'),
+    url(r'^upload/search_page/', csrf_exempt(views.search_page_rest), name='search_page.html'),
+    url(r'^upload/search_page_rest', csrf_exempt(views.search_page_rest), name='search_page_rest'),
+    url(r'^deneme/', csrf_exempt(views.dnm), name='dnm'),
 ]
 
 if settings.DEBUG:

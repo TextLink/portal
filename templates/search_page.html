@@ -1,0 +1,160 @@
+<style type="text/css">
+
+    #txt {
+        border-radius: 25px;
+        border: 2px dotted;
+        position: relative;
+        height: 600px;
+        white-space: pre-wrap;
+        font-size: 16px;
+        overflow-y: scroll;
+        resize: vertical;
+    }
+
+    #conn-select {
+        float: left;
+        width: 12vw;
+        resize: vertical;
+        overflow: scroll;
+        height: 800px;
+        font-family: 'Times New Roman';
+        font-size: 16px;
+    }
+
+    #sense-select {
+        float: right;
+        width: 350px;
+        overflow: scroll;
+    }
+
+    #upload_div {
+        float: right;
+        width: 250px;
+        overflow: scroll;
+    }
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search!</title>
+</head>
+<body>
+<form action="search_page.html" method="get">
+    {% csrf_token %}
+    <select id='file-select' name='file-select' method="get">
+        {% for obj in documents %}
+            <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<div id='upload_div' name='upload_div' contenteditable='false'>
+    Click here to upload new files:
+    <form action="" method="post">
+        {% csrf_token %}
+        <input type="submit" name="upload-button" value="Upload">
+    </form>
+</div>
+
+<select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple class='chosen-select'
+        tabindex='11'>
+    {% for sense in senses %}
+        {% if '.' not in sense %}
+       </optgroup>
+        <optgroup label="{{ sense}} ">
+
+        {% endif %}
+        <option value="{{ sense}} ">{{ sense }} </option>
+    {% endfor %}
+
+</select>
+<button>Search</button>
+
+<select name='conList' id='conn-select' multiple size='30'>
+    {% for ann in annotations %}
+        <option value="{{ ann.id }} ">{{ ann.id }} - {{ ann.conn }} ({{ ann.type }})</option>
+    {% endfor %}
+</select>
+
+
+<div id='txt' name='out' contenteditable='false'>
+    {{ selectedFile.raw_file.read }}
+</div>
+
+<p><a href="{% url 'home' %}">Return to home</a></p>
+
+
+<div id="div2"><h2>Test</h2></div>
+
+
+</body>
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#file-select").change(function () {
+            $.ajax({
+                url: 'http://localhost:8000/upload/search_page_rest?file=' + $("#file-select").val(),
+                type: 'GET',
+                crossDomain: true,
+                dataType: 'json',
+                success: function (data) {
+                    var content = data["text"];
+                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                    var selectData = "<select name='conList' id='conn-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(data, function (key, value) {
+                        selectData += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                        count += 1;
+                    });
+                    selectData += '</select>';
+                    $('#conn-select').html(selectData);
+                    $("#txt").html(JSON.stringify(content));
+
+                },
+                error: function () {
+                    alert('Failed!');
+                },
+            });
+        });
+
+        $("button").click(function () {
+            $.ajax({
+                url: 'http://localhost:8000/upload/search_page_rest?file='+ $("#file-select").val() + '&sense=' + $("#sense-select").val(),
+                type: 'GET',
+                crossDomain: true,
+                dataType: 'json',
+                success: function (data) {
+                    var content = data["text"];
+                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                    var selectData = "<select name='conList' id='conn-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(data, function (key, value) {
+                        selectData += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                        count += 1;
+                    });
+                    selectData += '</select>';
+                    $('#conn-select').html(selectData);
+                    $("#txt").html(JSON.stringify(content));
+                },
+                error: function () {
+                    alert('Failed!');
+                },
+            });
+        });
+
+
+    });
+</script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css">
+<script type='text/javascript'>
+    window.onload = function () {
+        $(".chosen-select").chosen({
+                no_results_text: "Oops, nothing found!"
+            }
+        );
+    }</script>

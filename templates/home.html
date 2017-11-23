@@ -1,22 +1,30 @@
 {% extends 'base.html' %}
 
+
+
 {% block content %}
+    <h1>Welcome to TextLink Portal</h1>
+
+    <address>You can upload your files here!</address>
   <ul>
     <li>
-      <a href="{% url 'simple_upload' %}">Simple Upload</a>
-    </li>
-    <li>
-      <a href="{% url 'model_form_upload' %}">Model Form Upload</a>
+      <a href="{% url 'model_form_upload.html' %}">Upload File(s)</a>
     </li>
   </ul>
 
-  <p>Uploaded files:</p>
+
+
+
+  <p>Uploaded files so far:</p>
   <ul>
     {% for obj in documents %}
       <li>
-        <a href="{{ obj.document.url }}">{{ obj.document.name }}</a>
-        <small>(Uploaded at: {{ obj.uploaded_at }})</small>
+        Ann: <a href="">{{ obj.ann_file.name }}</a>
+      </li>
+        <li>
+        Raw: <a href="">{{ obj.raw_file.name }}</a>
       </li>
     {% endfor %}
   </ul>
 {% endblock %}
+

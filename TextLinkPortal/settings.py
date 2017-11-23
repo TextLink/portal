@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_mysql',
     'portal',
 ]
 
@@ -84,12 +85,12 @@ DATABASES = {
 '''
 DATABASES = {
     'default': {
-        'NAME': 'portal',
+        'NAME': 'portaldb',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'portal',
-        'PASSWORD': 'portal',
-        'HOST': 'ec2-13-58-24-34.us-east-2.compute.amazonaws.com',
-        'PORT': '3307',
+        'USER': 'root',
+        'PASSWORD': 'secure12',
+        'HOST': 'ec2-18-216-226-115.us-east-2.compute.amazonaws.com',
+        'PORT': '3306',
     }
 }
 
