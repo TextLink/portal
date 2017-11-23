@@ -2,3 +2,4 @@
 documents/*
 portal/migrations/*
 db.sqlite3
+resources/*

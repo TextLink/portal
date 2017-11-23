@@ -11,7 +11,7 @@
         resize: vertical;
     }
 
-    #conn-select {
+    #annotation-select {
         float: left;
         width: 12vw;
         resize: vertical;
@@ -22,6 +22,7 @@
     }
 
     #sense-select {
+        top: 50px;
         float: right;
         width: 350px;
         overflow: scroll;
@@ -31,6 +32,13 @@
         float: right;
         width: 250px;
         overflow: scroll;
+    }
+    #dimlex_div{
+                float:right;
+        background-color: azure;
+
+
+
     }
 </style>
 <!DOCTYPE html>
@@ -61,17 +69,27 @@
         tabindex='11'>
     {% for sense in senses %}
         {% if '.' not in sense %}
-       </optgroup>
-        <optgroup label="{{ sense}} ">
+            </optgroup>
+            <optgroup label="{{ sense }} ">
 
         {% endif %}
-        <option value="{{ sense}} ">{{ sense }} </option>
+        <option value="{{ sense }} ">{{ sense }} </option>
     {% endfor %}
-
 </select>
+
+<br>
+
+<select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
+        tabindex='11'>
+    {% for key, value in connective_array.items %}
+        <option value="{{ key }} ">{{ key }} {{ value }} </option>
+    {% endfor %}
+</select>
+
+
 <button>Search</button>
 
-<select name='conList' id='conn-select' multiple size='30'>
+<select name='annotationList' id='annotation-select' multiple size='30'>
     {% for ann in annotations %}
         <option value="{{ ann.id }} ">{{ ann.id }} - {{ ann.conn }} ({{ ann.type }})</option>
     {% endfor %}
@@ -85,7 +103,7 @@
 <p><a href="{% url 'home' %}">Return to home</a></p>
 
 
-<div id="div2"><h2>Test</h2></div>
+<div id="dimlex_div"><h2>Dimlex</h2></div>
 
 
 </body>
@@ -119,30 +137,58 @@
                 },
             });
         });
-
+        //sense search
         $("button").click(function () {
-            $.ajax({
-                url: 'http://localhost:8000/upload/search_page_rest?file='+ $("#file-select").val() + '&sense=' + $("#sense-select").val(),
-                type: 'GET',
-                crossDomain: true,
-                dataType: 'json',
-                success: function (data) {
-                    var content = data["text"];
-                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                    var selectData = "<select name='conList' id='conn-select' multiple size='30'>\n";
-                    var count = 1;
-                    $.each(data, function (key, value) {
-                        selectData += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                        count += 1;
-                    });
-                    selectData += '</select>';
-                    $('#conn-select').html(selectData);
-                    $("#txt").html(JSON.stringify(content));
-                },
-                error: function () {
-                    alert('Failed!');
-                },
-            });
+
+            if ($("#conn-select").val() == null) {
+                $.ajax({
+                    url: 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val() + '&sense=' + $("#sense-select").val(),
+                    type: 'GET',
+                    crossDomain: true,
+                    dataType: 'json',
+                    success: function (data) {
+                        var content = data["text"];
+                        content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                        var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                        var count = 1;
+                        $.each(data, function (key, value) {
+                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                            count += 1;
+                        });
+                        annotation_data += '</select>';
+                        $('#annotation-select').html(annotation_data);
+                        $("#txt").html(JSON.stringify(content));
+                    },
+                    error: function () {
+                        alert('Failed!');
+                    },
+                });
+            }
+            else {
+                $.ajax({
+                    url: 'http://localhost:8000/get_sense_wrt_connective?connective=' + $("#conn-select").val() + '&lang=English',
+                    type: 'GET',
+                    crossDomain: true,
+                    dataType: 'json',
+                    success: function (data) {
+                        //var json_data =   JSON.parse(data);
+
+                        var dimlex_info = "<ul>"
+                        $.each(data, function (index, elem) {
+                            dimlex_info +=  'DIMLEX<br> <b>' + elem['word'] + '</b>';
+                            $.each(elem['relation'], function (index, pdtb) {
+                                dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
+                                   pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
+                            });
+                        });
+                        dimlex_info += '</ul>';
+                        $("#dimlex_div").html(dimlex_info);
+                    },
+                    error: function () {
+                        alert('Failed!');
+                    },
+                });
+            }
         });
 
 

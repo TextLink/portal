@@ -1,7 +1,9 @@
+import collections
+
 from portal.models import *
 
 # PDTB Annotation Methods
-def populate_ann_db(file, data, contents):
+def populate_ann_db(file, data, contents, language):
     contents = contents.replace("\n", "")
     ann_array = data.split("\n")
     for ann in ann_array:
@@ -31,7 +33,7 @@ def populate_ann_db(file, data, contents):
                            arg2=arg2[0], arg2Beg=arg2_index[0], arg2End=arg2_index[1],
                            arg22=arg2[1], arg2Beg2=arg2_index[2], arg2End2=arg2_index[3],
                            sense1=sense1, sense2=sense2,
-                           file=file, type=type
+                           file=file, type=type, language=language
                            ).save()
 
 
@@ -83,3 +85,16 @@ def getSensesAllLevel(slist):
         sense_array.append(slist[0] + "."+ slist[1]+"."+slist[2])
     return sense_array
 
+
+def prepareConnList(connectives):
+    conn_array = dict()
+    for c in connectives:
+        if (c['type'] != 'Explicit') and (c['type'] != 'AltLex'):
+            continue
+        elif c['conn2'].lower() != 'none':
+            conn_array[c['conn'] + " " + c['conn2']] = " (" + c['type'] + ")"
+        else:
+            conn_array[c['conn']] = " (" + c['type'] + ")"
+
+    sorted_array = collections.OrderedDict(sorted(conn_array.items()))
+    return sorted_array

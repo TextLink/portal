@@ -39,6 +39,8 @@ class pdtbAnnotation(models.Model):
     arg2Beg2 = models.IntegerField(null=True)
     arg2End2 = models.IntegerField(null=True)
     arg2End2 = models.CharField(max_length=100, null=True)
+    # language
+    language = models.CharField(max_length=100, null=True)
 
 
 class Dimlex(models.Model):

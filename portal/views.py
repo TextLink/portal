@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+import operator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
 from portal.forms import *
 from utils import *
+from django.db.models import Q
 
 import json
 
@@ -24,7 +27,8 @@ def model_form_upload(request):
         if form.is_valid():
             data = request.FILES['ann_file'].read()
             contents = request.FILES['raw_file'].read()
-            populate_ann_db(request.FILES['ann_file'].name, data, contents)
+            language = request.POST['language']
+            populate_ann_db(request.FILES['ann_file'].name, data, contents, language)
             file_object = form.save(commit=False)
             file_object.filename = request.FILES['ann_file'].name
             file_object.save()
@@ -34,6 +38,39 @@ def model_form_upload(request):
     return render(request, 'model_form_upload.html', {
         'form': form
     })
+
+
+def search_sense_rest(request):
+    if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'conn' not in request.GET:
+        selected_file_name = request.GET['file']
+        selected_senses = request.GET['sense'].replace(" ", "")
+        selected_senses = selected_senses.split(',')
+        selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
+        content = selected_file.raw_file.read()
+        annotations = pdtbAnnotation.objects.filter(reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses)))
+        annotation_list = dict()
+        annotation_list["text"] = content
+        for a in annotations:
+            annotation_list[a.id] = a.conn + "(" + a.type + ")"
+        return HttpResponse(json.dumps(annotation_list))
+
+    if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'conn' in request.GET:
+        selected_file_name = request.GET['file']
+        selected_senses = request.GET['sense'].replace(" ", "")
+        selected_connectives = request.GET['conn'].replace(" ", "")
+        selected_senses = selected_senses.split(',')
+        selected_connectives = selected_connectives.split(',')
+        selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
+        content = selected_file.raw_file.read()
+        annotations = pdtbAnnotation.objects.filter(
+            reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses))
+            )
+        annotation_list = dict()
+        annotation_list["text"] = content
+        for a in annotations:
+            annotation_list[a.id] = a.conn + "(" + a.type + ")"
+        return HttpResponse(json.dumps(annotation_list))
+
 
 
 def search_page_rest(request):
@@ -50,20 +87,6 @@ def search_page_rest(request):
             annotation_list[a.id] = a.conn + "(" + a.type + ")"
         return HttpResponse(json.dumps(annotation_list))
 
-    if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET:
-        selected_file_name = request.GET['file']
-        sense = request.GET['sense']
-        selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
-        content = selected_file.raw_file.read()
-        annotations = pdtbAnnotation.objects.raw(
-            '''SELECT id, conn, type FROM portal_pdtbannotation p 
-            WHERE p.sense1 = %s and p.file = %s''', [sense, selected_file_name])
-        annotation_list = dict()
-        annotation_list["text"] = content
-        for a in annotations:
-            annotation_list[a.id] = a.conn + "(" + a.type + ")"
-        return HttpResponse(json.dumps(annotation_list))
-
     if request.method == 'POST':
         return redirect('model_form_upload.html')
 
@@ -73,11 +96,15 @@ def search_page_rest(request):
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
     annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
     senses = pdtbAnnotation.objects.values('sense1', 'sense2').distinct()
+    connectives = pdtbAnnotation.objects.values('conn', 'conn2', 'type').distinct()
+    connective_array = prepareConnList(connectives)
+
     sense_array = prepareSenseList(senses)
     return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
                                                 'selectedFile': selected_file,
                                                 'selectedFileName': selected_file_name,
-                                                'senses': sense_array
+                                                'senses': sense_array,
+                                                'connective_array': connective_array
                                                 })
 
 
@@ -96,8 +123,12 @@ def get_connectives_wrt_language(request):
 def get_senses_wrt_connective(request):
     if request.method == 'GET' and 'connective' in request.GET and 'lang' in request.GET:
         conn = request.GET['connective']
+        conn = conn.split(",")
         lang = request.GET['lang']
-        selected_connective = Dimlex.objects.filter(connective=conn, lang=lang)
+        #selected_connective = Dimlex.objects.filter(connective=conn, lang=lang)
+        selected_connective = Dimlex.objects.filter(
+            reduce(operator.or_, (Q(connective=c)  for c in conn)), lang=lang
+        )
         pdtb3_relations = []
         for i in selected_connective:
             a = {"word": i.connective, "relation": i.metadata['syn'][0]['sem']}

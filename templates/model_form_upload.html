@@ -9,7 +9,16 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_ul }}
+        <input type="radio" name="language" value="English"> English
+        <input type="radio" name="language" value="German"> German
+        <input type="radio" name="language" value="Turkish"> Turkish
+        <br>
         <button type="submit">Upload File(s)</button>
+
+    </form>
+
+    <form action="">
+
     </form>
 
     <p><a href="{% url 'home' %}">Return to home</a></p>

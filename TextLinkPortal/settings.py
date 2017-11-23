@@ -85,11 +85,11 @@ DATABASES = {
 '''
 DATABASES = {
     'default': {
-        'NAME': 'portaldb',
+        'NAME': 'portal',
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
-        'PASSWORD': 'secure12',
-        'HOST': 'ec2-18-216-226-115.us-east-2.compute.amazonaws.com',
+        'PASSWORD': 'keaton',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }

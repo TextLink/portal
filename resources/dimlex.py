@@ -1,10 +1,10 @@
 import json
 import pymysql.cursors
 
-connection = pymysql.connect(host='ec2-18-216-226-115.us-east-2.compute.amazonaws.com',
+connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='secure12',
-                             db='portaldb',
+                             password='keaton',
+                             db='portal',
                              port=3306,
                              charset='utf8')
 
@@ -28,10 +28,10 @@ def read():
     print(result)
 
 
-with open('lico_d.json') as json_data:
+with open('dimlex_eng.json') as json_data:
     d = json.load(json_data)
     for i in d['entry']:
         if i['word'] != "":
-            insert(i['word'], "Italian", json.dumps(i))
+            insert(i['word'], "English", json.dumps(i))
 
 connection.close()

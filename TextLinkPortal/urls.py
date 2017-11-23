@@ -37,6 +37,8 @@ urlpatterns = [
     url(r'^upload/model/$', views.model_form_upload, name='model_form_upload.html'),
     url(r'^upload/search_page/', csrf_exempt(views.search_page_rest), name='search_page.html'),
     url(r'^upload/search_page_rest', csrf_exempt(views.search_page_rest), name='search_page_rest'),
+    url(r'^upload/search_sense_rest', csrf_exempt(views.search_sense_rest), name='search_sense_rest'),
+
     url(r'^deneme/', csrf_exempt(views.dnm), name='dnm'),
 ]
 
