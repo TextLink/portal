@@ -24,7 +24,7 @@
     #sense-select {
         top: 50px;
         float: right;
-        width: 350px;
+        width: 300px;
         overflow: scroll;
     }
 
@@ -33,16 +33,17 @@
         width: 250px;
         overflow: scroll;
     }
-    #dimlex_div{
-                float:right;
+
+    #dimlex_div {
+        float: right;
         background-color: azure;
-
-
 
     }
 </style>
 <!DOCTYPE html>
 <html lang="en">
+{% include 'search_utils.html' %}
+
 <head>
     <meta charset="UTF-8">
     <title>Search!</title>
@@ -76,7 +77,30 @@
         <option value="{{ sense }} ">{{ sense }} </option>
     {% endfor %}
 </select>
+<div class="MSbox">
+    <input type="checkbox" id="MS" name="MS" value="1">
+    Multiple Sense Search
+    <input type="hidden" id="MS" name="MS" value="0"/>
+</div>
+<p>
+    <select id="select-operator" name="operator">
+        <option value="none" hidden></option>
+        <option value="and">and</option>
+        <option value="not">not</option>
+    </select>
+    <select name='sense2List[]' id='sense-select' data-placeholder='Second Semantic Class' multiple
+            class='chosen-select'
+            tabindex='11'>
+        {% for sense in senses %}
+            {% if '.' not in sense %}
+                </optgroup>
+                <optgroup label="{{ sense }} ">
 
+            {% endif %}
+            <option value="{{ sense }} ">{{ sense }} </option>
+        {% endfor %}
+    </select>
+</p>
 <br>
 
 <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
@@ -87,11 +111,14 @@
 </select>
 
 
-<button>Search</button>
+<button name="search-button">Search</button>
+
+<button name="reset">Reset</button>
 
 <select name='annotationList' id='annotation-select' multiple size='30'>
     {% for ann in annotations %}
-        <option value="{{ ann.id }} ">{{ ann.id }} - {{ ann.conn }} ({{ ann.type }})</option>
+        <option value="{{ ann.id }} ">{{ ann.id }} - {{ ann.conn }} ({{ ann.type }}) | {{ ann.sense1 }}
+            | {{ ann.sense2 }}</option>
     {% endfor %}
 </select>
 
@@ -109,98 +136,3 @@
 </body>
 </html>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $("#file-select").change(function () {
-            $.ajax({
-                url: 'http://localhost:8000/upload/search_page_rest?file=' + $("#file-select").val(),
-                type: 'GET',
-                crossDomain: true,
-                dataType: 'json',
-                success: function (data) {
-                    var content = data["text"];
-                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                    var selectData = "<select name='conList' id='conn-select' multiple size='30'>\n";
-                    var count = 1;
-                    $.each(data, function (key, value) {
-                        selectData += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                        count += 1;
-                    });
-                    selectData += '</select>';
-                    $('#conn-select').html(selectData);
-                    $("#txt").html(JSON.stringify(content));
-
-                },
-                error: function () {
-                    alert('Failed!');
-                },
-            });
-        });
-        //sense search
-        $("button").click(function () {
-
-            if ($("#conn-select").val() == null) {
-                $.ajax({
-                    url: 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val() + '&sense=' + $("#sense-select").val(),
-                    type: 'GET',
-                    crossDomain: true,
-                    dataType: 'json',
-                    success: function (data) {
-                        var content = data["text"];
-                        content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                        var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
-                        var count = 1;
-                        $.each(data, function (key, value) {
-                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                            count += 1;
-                        });
-                        annotation_data += '</select>';
-                        $('#annotation-select').html(annotation_data);
-                        $("#txt").html(JSON.stringify(content));
-                    },
-                    error: function () {
-                        alert('Failed!');
-                    },
-                });
-            }
-            else {
-                $.ajax({
-                    url: 'http://localhost:8000/get_sense_wrt_connective?connective=' + $("#conn-select").val() + '&lang=English',
-                    type: 'GET',
-                    crossDomain: true,
-                    dataType: 'json',
-                    success: function (data) {
-                        //var json_data =   JSON.parse(data);
-
-                        var dimlex_info = "<ul>"
-                        $.each(data, function (index, elem) {
-                            dimlex_info +=  'DIMLEX<br> <b>' + elem['word'] + '</b>';
-                            $.each(elem['relation'], function (index, pdtb) {
-                                dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
-                                   pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
-                            });
-                        });
-                        dimlex_info += '</ul>';
-                        $("#dimlex_div").html(dimlex_info);
-                    },
-                    error: function () {
-                        alert('Failed!');
-                    },
-                });
-            }
-        });
-
-
-    });
-</script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css">
-<script type='text/javascript'>
-    window.onload = function () {
-        $(".chosen-select").chosen({
-                no_results_text: "Oops, nothing found!"
-            }
-        );
-    }</script>
