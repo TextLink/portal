@@ -17,10 +17,6 @@ def home(request):
     return render(request, 'home.html', {'documents': documents})
 
 
-def dnm(request):
-    return render(request, 'dnm.html', )
-
-
 def model_form_upload(request):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
