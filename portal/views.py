@@ -9,15 +9,18 @@ from portal.forms import *
 from utils import *
 from django.db.models import Q
 
+from django.utils.crypto import get_random_string
 import json
 
 
 def home(request):
-    documents = uploaded_files.objects.all()
-    return render(request, 'home.html', {'documents': documents})
+    return HttpResponse("Welcome")
 
 
 def model_form_upload(request):
+    request.session.set_expiry(0)
+    user_id = get_random_string(length=32)
+    request.session['user_id'] = user_id
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():

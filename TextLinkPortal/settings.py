@@ -51,6 +51,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'TextLinkPortal.urls'
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -70,6 +72,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'TextLinkPortal.wsgi.application'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 '''
@@ -79,7 +88,7 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-'''
+
 DATABASES = {
     'default': {
         'NAME': 'portal',
@@ -93,6 +102,18 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
 
+    }
+}
+'''
+
+DATABASES = {
+    'default': {
+        'NAME': 'portaldb',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'root',
+        'PASSWORD': 'secure12',
+        'HOST': 'ec2-18-216-226-115.us-east-2.compute.amazonaws.com',
+        'PORT': '3306',
     }
 }
 
