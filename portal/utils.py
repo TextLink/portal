@@ -3,8 +3,8 @@ import collections
 from portal.models import *
 
 # PDTB Annotation Methods
-def populate_ann_db(file, data, contents, language):
-    contents = contents.replace("\n", "")
+def populate_ann_db(file, data, contents, language, user_id):
+   # contents = contents.replace("\n", "")
     ann_array = data.split("\n")
     for ann in ann_array:
         if len(ann) > 0 and "Rejected" not in ann:
@@ -33,7 +33,8 @@ def populate_ann_db(file, data, contents, language):
                            arg2=arg2[0], arg2Beg=arg2_index[0], arg2End=arg2_index[1],
                            arg22=arg2[1], arg2Beg2=arg2_index[2], arg2End2=arg2_index[3],
                            sense1=sense1, sense2=sense2,
-                           file=file, type=type, language=language
+                           file=file, type=type, language=language,
+                           userid=user_id
                            ).save()
 
 

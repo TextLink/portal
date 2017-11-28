@@ -41,6 +41,7 @@ class pdtbAnnotation(models.Model):
     arg2End2 = models.CharField(max_length=100, null=True)
     # language
     language = models.CharField(max_length=100, null=True)
+    userid = models.CharField(max_length=100, null=False, default="none")
 
 class ted_mdb_annotation(models.Model):
     ann_id = models.CharField(max_length=30, null=False)

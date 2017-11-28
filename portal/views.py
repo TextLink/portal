@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import codecs
 import operator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -11,6 +11,7 @@ from django.db.models import Q
 
 from django.utils.crypto import get_random_string
 import json
+from django.utils.encoding import smart_unicode
 
 
 def home(request):
@@ -19,15 +20,19 @@ def home(request):
 
 def model_form_upload(request):
     request.session.set_expiry(0)
-    user_id = get_random_string(length=32)
-    request.session['user_id'] = user_id
+    if 'user_id' not in request.session:
+        user_id = get_random_string(length=32)
+        request.session['user_id'] = user_id
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             data = request.FILES['ann_file'].read()
-            contents = request.FILES['raw_file'].read()
+            # utf8_file = codecs.EncodedFile(request.FILES['raw_file'], "utf-8")
+            # with codecs.open(request.FILES['raw_file'], 'r', encoding='utf8') as f:
+            #     contents = f.read()
+            contents = smart_unicode(request.FILES['raw_file'].read())
             language = request.POST['language']
-            populate_ann_db(request.FILES['ann_file'].name, data, contents, language)
+            populate_ann_db(request.FILES['ann_file'].name, data, contents, language, request.session['user_id'])
             file_object = form.save(commit=False)
             file_object.filename = request.FILES['ann_file'].name
             file_object.save()

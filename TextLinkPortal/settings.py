@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
+'''
 DATABASES = {
     'default': {
         'NAME': 'portal',
@@ -104,8 +104,8 @@ DATABASES = {
 
     }
 }
-'''
 
+'''
 DATABASES = {
     'default': {
         'NAME': 'portaldb',
@@ -116,7 +116,7 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-
+'''
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 

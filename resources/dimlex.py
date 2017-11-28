@@ -28,10 +28,10 @@ def read():
     print(result)
 
 
-with open('dimlex_eng.json') as json_data:
+with open('ldm-pt.json') as json_data:
     d = json.load(json_data)
     for i in d['entry']:
         if i['word'] != "":
-            insert(i['word'], "English", json.dumps(i))
+            insert(i['word'], "Port", json.dumps(i))
 
 connection.close()
