@@ -30,14 +30,27 @@
 
     #upload_div {
         float: right;
-        width: 250px;
+        width: 270px;
         overflow: scroll;
+        background-color: cadetblue;
     }
 
     #dimlex_div {
         float: right;
         background-color: azure;
+    }
 
+    #button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 4px 2px;
+        cursor: pointer;
+        font-size: 10px;
     }
 </style>
 <!DOCTYPE html>
@@ -45,10 +58,14 @@
 {% include 'js/search_utils.html' %}
 
 <head>
-    <meta charset="UTF-8">
-    <title>Search!</title>
+    <title>Search Annotations</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
+<br>
 <form action="search_page.html" method="get">
     {% csrf_token %}
     <select id='file-select' name='file-select' method="get">
@@ -106,18 +123,24 @@
 <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
         tabindex='11'>
     {% for key, value in connective_array.items %}
-        <option value="{{ key }} ">{{ key }} {{ value }} </option>
+        <option value="{{ key }} "> {{ key }} </option>
     {% endfor %}
 </select>
+<form class="alert alert-info" id="checkbox-form">
 
-
-<button name="search-button">Search</button>
+    <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
+    <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
+    <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
+    <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+</form>
+<button class="button" name="search-button">Search</button>
 
 <button name="reset">Reset</button>
+<div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
 
 <select name='annotationList' id='annotation-select' multiple size='30'>
     {% for ann in annotations %}
-        <option value="{{ ann.id }} ">{{ ann.id }} - {{ ann.conn }} ({{ ann.type }}) | {{ ann.sense1 }}
+        <option value="{{ forloop.counter }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }}) | {{ ann.sense1 }}
             | {{ ann.sense2 }}</option>
     {% endfor %}
 </select>

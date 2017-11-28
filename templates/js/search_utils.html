@@ -7,7 +7,7 @@
 
     function updateChosenSelect(data, select_html, select_name) {
         $.each(data, function (key, value) {
-            select_html += '<option value=' + value + '>' + value + '</option>';
+            select_html += '<option value=' + key + '>' + value + '</option>';
         });
         select_html += '</select>';
         $(select_name).html(select_html);
@@ -37,6 +37,8 @@
                 });
                 annotation_select_data += '</select>';
                 $('#annotation-select').html(annotation_select_data);
+                $('#info').text(count - 1 + " relations have been found.");
+
                 // fill ANNOTATION SELECT
 
                 // fill CONNECTIVE SELECT
@@ -63,6 +65,9 @@
         $('#MS').attr('checked', false); // Checks it
         $('p').hide();
         $("#select-operator").hide();
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
     }
 
     $(document).ready(function () {
@@ -83,8 +88,15 @@
             if ($("#conn-select").val() !== null) {
                 ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
             }
-            if ($("#sense-select").val() === null && $("#conn-select").val() === null) {
-                ajax_url = 'http://localhost:8000/upload/search_page_rest?file=' + $("#file-select").val();
+            if ($("#checkbox-form input:checkbox:checked").length > 0) {
+                ajax_url = ajax_url + '&type=';
+
+                $("input:checkbox[name=discourse_type]:checked").each(function () {
+                    ajax_url = ajax_url + $(this).val() + ",";
+                });
+            }
+            if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
+                ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
             }
             $.ajax({
                 url: ajax_url,
@@ -103,6 +115,8 @@
                         }
                     });
                     annotation_data += '</select>';
+                    $('#info').text(count - 1 + " relations have been found.");
+
                     $('#annotation-select').html(annotation_data);
                     $("#txt").html(JSON.stringify(content));
                 },
@@ -142,7 +156,8 @@
             }
             // DIMLEX AJAX REQUEST
         });
-    });
+    })
+    ;
 </script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>

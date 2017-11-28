@@ -7,7 +7,7 @@ def populate_ann_db(file, data, contents, language):
     contents = contents.replace("\n", "")
     ann_array = data.split("\n")
     for ann in ann_array:
-        if len(ann) > 0:
+        if len(ann) > 0 and "Rejected" not in ann:
             ann_fields = ann.split("|")
             type = ann_fields[0]
 
@@ -77,8 +77,7 @@ def prepareSenseList(senses):
 
 
 def getSensesAllLevel(slist):
-    sense_array = []
-    sense_array.append(slist[0])
+    sense_array = [slist[0]]
     if(len(slist) > 1):
         sense_array.append(slist[0] + "." + slist[1])
     if (len(slist) > 2):
