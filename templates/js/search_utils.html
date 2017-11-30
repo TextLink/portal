@@ -3,6 +3,10 @@
 </html>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 <script>
 
     var request_dict = {}
@@ -174,9 +178,7 @@
                 alert('Failed!');
             },
         });
-
     }
-
 
     $(document).ready(function () {
 
@@ -185,9 +187,7 @@
         $("[name='download-button']").click(download);
         $("[name='search-button']").click(senseSearch);
         $("#annotation-select").click(highlight);
-
-    })
-    ;
+    });
 </script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
@@ -195,6 +195,7 @@
 <script type='text/javascript'>
     window.onload = function () {
         $(".chosen-select").chosen({
+                width: '250px',
                 no_results_text: "Oops, nothing found!"
             }
         );

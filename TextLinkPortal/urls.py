@@ -33,19 +33,17 @@ urlpatterns = [
         name='get_senses_wrt_language'),
     url(r'^get_connectives_wrt_sense', csrf_exempt(views.get_connectives_wrt_sense),
         name='get_connectives_wrt_sense'),
-    url(r'^query$', views.query, name='query'),
 
     url(r'^upload_annotations/$', views.upload_annotations, name='upload_annotations.html'),
 
-    url(r'^download/', csrf_exempt(views.download), name='download'),
-
     url(r'^upload/search_page/', csrf_exempt(views.search_page_rest), name='search_page.html'),
     url(r'^upload/search_sense_rest', csrf_exempt(views.search_sense_rest), name='search_sense_rest'),
+
     url(r'^highlight_rest', csrf_exempt(views.highlight_rest), name='highlight_rest'),
+    url(r'^download/', csrf_exempt(views.download), name='download'),
 
     url(r'^ted_mdb/', csrf_exempt(views.ted_mdb), name='ted_mdb.html'),
     url(r'^ted_mdb_rest', csrf_exempt(views.ted_mdb_rest), name='ted_mdb_rest'),
-
     url(r'^ted_mdb_get_aligned', csrf_exempt(views.ted_mdb_get_aligned), name='ted_mdb_get_aligned'),
 
 ]

@@ -33,7 +33,7 @@ def upload_annotations(request):
             file_object = form.save(commit=False)
             file_object.filename = request.FILES['ann_file'].name
             file_object.save()
-        return redirect('search_page.html')
+        return redirect('old_search_page.html')
     else:
         form = DocumentForm()
     return render(request, 'upload_annotations.html', {
@@ -231,10 +231,8 @@ def ted_mdb_get_aligned(request):
         except:
             pass
 
-
-####### ALIGNMENT  #######
-
 ####### TED - MDB
+
 
 ####### SEARCH ##############
 def search_sense_rest(request):
@@ -365,6 +363,7 @@ def download(request):
         # Return CSV file to browser as download
 
     return response
+## DOWNLOAD
 
 
 def get_connectives_wrt_language(request):
@@ -441,5 +440,3 @@ def get_connectives_wrt_sense(request):
         return HttpResponse(json.dumps(conn_list))
 
 
-def query(request):
-    return render(request, "to_be_deleted/query.html", {})
