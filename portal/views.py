@@ -32,8 +32,9 @@ def upload_annotations(request):
             populate_ann_db(request.FILES['ann_file'].name, data, contents, language, request.session['user_id'])
             file_object = form.save(commit=False)
             file_object.filename = request.FILES['ann_file'].name
+            file_object.user_id = request.session['user_id']
             file_object.save()
-        return redirect('old_search_page.html')
+        return redirect('search_page.html')
     else:
         form = DocumentForm()
     return render(request, 'upload_annotations.html', {
@@ -43,29 +44,23 @@ def upload_annotations(request):
 
 def highlight_rest(request):
     if request.method == 'GET' and 'annotation' in request.GET:
-        annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('conn', 'connBeg', 'connEnd',
-                                                                                        'conn2', 'connBeg2', 'connEnd2',
-                                                                                        'arg1', 'arg1Beg', 'arg1End',
-                                                                                        'arg12', 'arg1Beg2', 'arg1End2',
-                                                                                        'arg2', 'arg2Beg', 'arg2End',
-                                                                                        'arg22', 'arg2Beg2', 'arg2End2',
+        annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('connBeg', 'connEnd',
+                                                                                        'connBeg2', 'connEnd2',
+                                                                                        'arg1Beg', 'arg1End',
+                                                                                        'arg1Beg2', 'arg1End2',
+                                                                                        'arg2Beg', 'arg2End',
+                                                                                        'arg2Beg2', 'arg2End2',
                                                                                         'file')[0]
         text = uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read().replace("\n", "")
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \
-            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation']).values('conn', 'connBeg',
-                                                                                               'connEnd',
-                                                                                               'conn2', 'connBeg2',
-                                                                                               'connEnd2',
-                                                                                               'arg1', 'arg1Beg',
-                                                                                               'arg1End',
-                                                                                               'arg12', 'arg1Beg2',
-                                                                                               'arg1End2',
-                                                                                               'arg2', 'arg2Beg',
-                                                                                               'arg2End',
-                                                                                               'arg22', 'arg2Beg2',
-                                                                                               'arg2End2',
+            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation']).values('connBeg', 'connEnd',
+                                                                                               'connBeg2', 'connEnd2',
+                                                                                               'arg1Beg', 'arg1End',
+                                                                                               'arg1Beg2', 'arg1End2',
+                                                                                               'arg2Beg', 'arg2End',
+                                                                                               'arg2Beg2', 'arg2End2',
                                                                                                'file')[0]
         text = ted_mdb_files.objects.filter(filename=annotation['file'])[0].raw_file
 
@@ -231,6 +226,7 @@ def ted_mdb_get_aligned(request):
         except:
             pass
 
+
 ####### TED - MDB
 
 
@@ -240,10 +236,12 @@ def search_sense_rest(request):
         return redirect('upload_annotations.html')
 
     selected_file_name = request.GET['file']
-    selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
+    selected_file = uploaded_files.objects.filter(filename=selected_file_name,
+                                                  user_id=request.session['user_id']).first()
     content = selected_file.raw_file.read()
     annotation_list = dict()
-    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+    annotations = pdtbAnnotation.objects.filter(file=selected_file_name,
+                                                  user_id=request.session['user_id'])
     # SENSE1, !SENSE2
     if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
         selected_senses = request.GET['sense'].replace(" ", "")
@@ -284,20 +282,20 @@ def search_sense_rest(request):
 
 # ONLOAD
 def search_page_rest(request):
-    documents = uploaded_files.objects.all()
+    documents = uploaded_files.objects.filter(user_id=request.session['user_id'])
 
     if request.method == 'GET' and 'file' in request.GET:
         selected_file_name = request.GET['file']
-        selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
+        selected_file = uploaded_files.objects.filter(filename=selected_file_name, user_id=request.session['user_id']).first()
         content = selected_file.raw_file.read()
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id'])
         annotation_list = dict()
         for a in annotations:
             annotation_list[a.id] = a.conn + "(" + a.type + ")"
 
         connective_list = dict()
         connectives = pdtbAnnotation.objects.filter(Q(type="Explicit") | Q(type="AltLex"),
-                                                    file=selected_file_name).order_by('conn').distinct()
+                                                    file=selected_file_name, user_id=request.session['user_id']).order_by('conn').distinct()
         for c in connectives:
             connective_list[c.conn] = c.conn + "(" + c.type + ")"
 
@@ -313,10 +311,10 @@ def search_page_rest(request):
         return redirect('upload_annotations.html')
 
     # ON LOAD
-    first = uploaded_files.objects.first()
+    first = uploaded_files.objects.filter(user_id=request.session['user_id']).first()
     selected_file_name = first.filename
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
-    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+    annotations = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id'])
     senses = pdtbAnnotation.objects.values('sense1', 'sense2').distinct()
     connectives = pdtbAnnotation.objects.values('conn', 'conn2', 'type').distinct()
     connective_array = prepareConnList(connectives)
@@ -363,6 +361,8 @@ def download(request):
         # Return CSV file to browser as download
 
     return response
+
+
 ## DOWNLOAD
 
 
@@ -438,5 +438,3 @@ def get_connectives_wrt_sense(request):
         for i in conns:
             conn_list.append(i.connective)
         return HttpResponse(json.dumps(conn_list))
-
-

@@ -2,7 +2,7 @@ import collections
 
 from portal.models import *
 import operator
-
+from collections import Counter
 
 def add_highlight_html(text, tag, index):
     to_replace = "<span class= '" + tag + "'>" + text[index[0]:index[1]] + "</span>"
@@ -11,26 +11,41 @@ def add_highlight_html(text, tag, index):
     return text
 
 
+def check_overlapping(span_dict, index_dict):
+    new_dict = {}
+    for k, v in span_dict.iteritems():
+        new_dict.setdefault(v, []).append(k)
+    for k, v in new_dict:
+        if len(v) > 1 and k != -1:
+            duplicate = v;
+    t = ""
+
 def update_html(text, annotation):
+    values = annotation.values()
+
+
+
     span_dict = {"conn": annotation['connBeg'],
                  "conn2": annotation['connBeg2'],
                  "arg1": annotation['arg1Beg'],
                  "arg12": annotation['arg1Beg2'],
                  "arg2": annotation['arg2Beg'],
-                 "arg22": annotation['arg2Beg2'],
-                 }
+                 "arg22": annotation['arg2Beg2']}
     index_dict = {"conn": (annotation['connBeg'], annotation['connEnd']),
                   "conn2": (annotation['connBeg2'], annotation['connEnd2']),
                   "arg1": (annotation['arg1Beg'], annotation['arg1End']),
                   "arg12": (annotation['arg1Beg2'], annotation['arg1End2']),
                   "arg2": (annotation['arg2Beg'], annotation['arg2End']),
-                  "arg22": (annotation['arg2Beg2'], annotation['arg2End2']),
-                  }
-    sorted_span_dict = sorted(span_dict.items(), key=operator.itemgetter(1), reverse=True)
+                  "arg22": (annotation['arg2Beg2'], annotation['arg2End2'])}
+
+    check_overlapping(span_dict, index_dict)
+
+    sorted_span_dict = sorted(span_dict.items(), key=lambda s: s[0], reverse=True)
 
     for key, value in sorted_span_dict:
         if value > 0:
             text = add_highlight_html(text, key, index_dict[key])
+
     return text
 
 
@@ -66,7 +81,7 @@ def populate_ann_db(file, data, contents, language, user_id):
                            arg22=arg2[1], arg2Beg2=arg2_index[2], arg2End2=arg2_index[3],
                            sense1=sense1, sense2=sense2,
                            file=file, type=type, language=language,
-                           userid=user_id
+                           user_id=user_id
                            ).save()
 
 

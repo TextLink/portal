@@ -9,12 +9,7 @@ class uploaded_files(models.Model):
     ann_file = models.FileField(upload_to='forms/')
     raw_file = models.FileField(upload_to='forms/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
-
-class ted_mdb_files(models.Model):
-    filename = models.CharField(max_length=500, default="")
-    raw_file = models.TextField()
-    language = models.CharField(max_length=100, null=True)
+    user_id = models.CharField(max_length=100, null=False, default="none")
 
 
 class pdtbAnnotation(models.Model):
@@ -46,7 +41,13 @@ class pdtbAnnotation(models.Model):
     arg2End2 = models.IntegerField(null=True)
     # language
     language = models.CharField(max_length=100, null=True)
-    userid = models.CharField(max_length=100, null=False, default="none")
+    user_id = models.CharField(max_length=100, null=False, default="none")
+
+
+class ted_mdb_files(models.Model):
+    filename = models.CharField(max_length=500, default="")
+    raw_file = models.TextField()
+    language = models.CharField(max_length=100, null=True)
 
 
 class ted_mdb_annotation(models.Model):
@@ -86,7 +87,6 @@ class ted_mdb_alignment(models.Model):
     fl_file = models.CharField(max_length=500, null=False, default="file")
     sl_id = models.CharField(max_length=30, null=False, default="en-1")
     sl_file = models.CharField(max_length=500, null=False, default="file")
-
 
 
 class Dimlex(models.Model):
