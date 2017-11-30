@@ -1,0 +1,290 @@
+<style type="text/css">
+    body {
+        margin: 0;
+    }
+
+    button.accordion {
+        background-color: #eee;
+        color: #444;
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 18px;
+        transition: 0.4s;
+    }
+
+    button.accordion.active, button.accordion:hover {
+        background-color: #ccc;
+    }
+
+    button.accordion:after {
+        content: '\002B';
+        color: #777;
+        font-weight: bold;
+        float: right;
+        margin-left: 5px;
+    }
+
+    button.accordion.active:after {
+        content: "\2212";
+    }
+
+    .fixed-navbar {
+        overflow: hidden;
+        background-color: #8B4513;
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+
+    .fixed-navbar a {
+        float: left;
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .file-div {
+        background-color: #FFF8DC;
+        float: right;
+        position: relative;
+        width: 100%;
+    }
+
+    .file-div a {
+        float: left;
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .my-main {
+        padding: 16px;
+        margin-top: 10px;
+    }
+
+    #txt {
+        border: 1px dotted;
+        position: relative;
+        height: 600px;
+        white-space: pre-wrap;
+        font-size: 16px;
+        overflow-y: scroll;
+        resize: vertical;
+        padding: 10px;
+    }
+
+    #annotation-select {
+        float: left;
+        width: 15vw;
+        resize: vertical;
+        overflow: scroll;
+        height: 600px;
+        font-family: 'Times New Roman';
+        font-size: 16px;
+    }
+
+    #sense-select {
+        top: 50px;
+        float: right;
+        width: 300px;
+        overflow: scroll;
+    }
+
+    #upload_div {
+        float: right;
+    }
+
+    #button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 4px 2px;
+        cursor: pointer;
+        font-size: 10px;
+    }
+
+    .my-parent div {
+        float: left;
+        margin: 10px;
+    }
+
+    #demo {
+        background-color: #D2B48C;
+    }
+
+    #se-demo {
+        background-color: #D2B48C;
+    }
+
+    .teset {
+        float: left;
+    }
+
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+<!DOCTYPE html>
+<html lang="en">
+{% include 'js/search_utils.html' %}
+
+<head>
+    <title>Search Annotations</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="fixed-navbar">
+    <a href="#home">Home</a>
+    <a href="#usage">Usage</a>
+    <a href="#contact">Contact</a>
+    <a style="float:right" href="#file-upload">TED-MDB</a>
+    <a style="float:right" href="#file-upload">Search</a>
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#demo">File Menu</button>
+<div id="demo" class="collapse">
+    Selected File:
+    <form action="search_page.html" method="get">
+        {% csrf_token %}
+        <select id='file-select' name='file-select' method="get">
+            {% for obj in documents %}
+                <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    Click here to upload new files:
+    <form action="" method="post">
+        {% csrf_token %}
+        <input type="submit" name="upload-button" value="Upload">
+    </form>
+    <br>
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
+<div id="se-demo" class="collapse">
+    Select sense for query:
+    <div>
+        <div class="teset">
+            <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class'
+                    class='select'>
+                {% for sense in senses %}
+                    {% if '.' not in sense %}
+                        </optgroup>
+                        <optgroup label="{{ sense }} ">
+
+                    {% endif %}
+                    <option value="{{ sense }} ">{{ sense }} </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="teset">
+            <p>
+                <select id="select-operator" name="operator">
+                    <option value="none" hidden></option>
+                    <option value="and">and</option>
+                    <option value="not">not</option>
+                </select>
+                <select name='sense2List[]' id='sense-select' data-placeholder='Second Semantic Class'
+                        class='select'>
+                    {% for sense in senses %}
+                        {% if '.' not in sense %}
+                            </optgroup>
+                            <optgroup label="{{ sense }} ">
+
+                        {% endif %}
+                        <option value="{{ sense }} ">{{ sense }} </option>
+                    {% endfor %}
+                </select>
+            </p>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="MSbox">
+        Multiple Sense Search
+        <input type="checkbox" id="MS" name="MS" value="1">
+        <input type="hidden" id="MS" name="MS" value="0"/>
+    </div>
+    <br>
+    Select connective for query:
+    <br>
+    <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' class='select'
+            tabindex='11'>
+        {% for key, value in connective_array.items %}
+            <option value="{{ key }} "> {{ key }} </option>
+        {% endfor %}
+    </select>
+    <form id="checkbox-form">
+
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+    </form>
+    <button class="button" name="search-button">Search</button>
+
+    <button name="reset">Reset</button>
+    <br>
+    <br>
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#dimlex_div">Dimlex Information</button>
+<div id="dimlex_div" class="collapse">
+    <table>
+        <tr>
+            <th>Company</th>
+            <th>Contact</th>
+            <th>Country</th>
+        </tr>
+        <tr>
+            <td>Alfreds Futterkiste</td>
+            <td>Maria Anders</td>
+            <td>Germany</td>
+        </tr>
+        <tr>
+            <td>Centro comercial Moctezuma</td>
+            <td>Francisco Chang</td>
+            <td>Mexico</td>
+        </tr>
+    </table>
+</div>
+<div id="info" class="alert alert-success" style="margin-bottom: 0px"> {{ annotations|length }} relations have been found</div>
+<select name='annotationList' id='annotation-select' multiple size='30'>
+    {% for ann in annotations %}
+        <option value="{{ forloop.counter }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+            | {{ ann.sense1 }}
+            | {{ ann.sense2 }}</option>
+    {% endfor %}
+</select>
+
+
+<div id='txt' name='out' contenteditable='false' align="justify">
+    {{ selectedFile.raw_file.read }}
+</div>
+</body>
+</html>
+
