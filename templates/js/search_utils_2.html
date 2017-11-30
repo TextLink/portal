@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+
+    function updateChosenSelect(data, select_html, select_name) {
+        $.each(data, function (key, value) {
+            select_html += '<option value=' + key + '>' + value + '</option>';
+        });
+        select_html += '</select>';
+        $(select_name).html(select_html);
+        $(select_name).val('').trigger('chosen:updated');
+    }
+
+
+    function fileLoad() {
+        $.ajax({
+            url: 'http://localhost:8000/upload/search_page_rest?file=' + $("#file-select").val(),
+            type: 'GET',
+            crossDomain: true,
+            dataType: 'json',
+            success: function (data) {
+                var annotation_data = data['annotation_list']
+                var connective_data = data['connective_list']
+                var content = data["text"];
+                content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                $("#txt").html(JSON.stringify(content));
+
+                // fill ANNOTATION SELECT
+                var annotation_select_data = "<select name='annotationList' id='annotation-select' multiple size='30'>";
+                var count = 1;
+                $.each(annotation_data, function (key, value) {
+                    annotation_select_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                    count += 1;
+                });
+                annotation_select_data += '</select>';
+                $('#annotation-select').html(annotation_select_data);
+                $('#info').text(count - 1 + " relations have been found.");
+
+                // fill ANNOTATION SELECT
+
+                // fill CONNECTIVE SELECT
+                var connective_select_data = "<select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'\n";
+                updateChosenSelect(connective_data, connective_select_data, "[name='connectiveList[]");
+                // fill CONNECTIVE SELECT
+
+                // fill SENSE SELECT
+
+
+            },
+            error: function () {
+                alert('Failed!');
+            },
+        });
+    }
+
+    function reset() {
+        fileLoad();
+        $("[name='sense1List[]").val('').trigger('chosen:updated');
+        $("[name='sense2List[]").val('').trigger('chosen:updated');
+        $("#conn-select").val('').trigger('chosen:updated');
+
+        $('#MS').attr('checked', false); // Checks it
+        $('p').hide();
+        $("#select-operator").hide();
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#file-select").change(fileLoad);
+        $("[name='reset']").click(reset);
+        //sense search
+        $("[name='search-button']").click(function () {
+            var ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
+
+            if ($("[name='sense1List[]']").val() !== null) {
+                ajax_url = ajax_url + '&sense=' + $("#sense-select").val();
+            }
+            if ($("[name='sense2List[]']").val() !== null) {
+                ajax_url = ajax_url + '&sense2=' + $("[name='sense2List[]']").val();
+                ajax_url = ajax_url + '&op=' + $("[name='operator']").val();
+            }
+            if ($("#conn-select").val() !== null) {
+                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+            }
+            if ($("#checkbox-form input:checkbox:checked").length > 0) {
+                ajax_url = ajax_url + '&type=';
+
+                $("input:checkbox[name=discourse_type]:checked").each(function () {
+                    ajax_url = ajax_url + $(this).val() + ",";
+                });
+            }
+            if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
+                ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
+            }
+            $.ajax({
+                url: ajax_url,
+                type: 'GET',
+                crossDomain: true,
+                dataType: 'json',
+                success: function (data) {
+                    var content = data["text"];
+                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                    var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(data, function (key, value) {
+                        if (key.indexOf("text") < 0) {
+                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                            count += 1;
+                        }
+                    });
+                    annotation_data += '</select>';
+                    $('#info').text(count - 1 + " relations have been found.");
+
+                    $('#annotation-select').html(annotation_data);
+                    $("#txt").html(JSON.stringify(content));
+                },
+                error: function () {
+                    alert('Failed!');
+                },
+            });
+            // DIMLEX AJAX REQUEST
+            if (ajax_url.indexOf(('conn')) > 0) {
+                $.ajax({
+                    url: "http://localhost:8000/get_sense_wrt_connective?connective=" + $("#conn-select").val() + "&lang=English",
+                    type: 'GET',
+                    crossDomain: true,
+                    dataType: 'json',
+                    success: function (data) {
+                        var dimlex_info = "<ul>"
+                        $.each(data, function (index, elem) {
+                            dimlex_info += 'DIMLEX<br> <b>' + elem['word'] + '</b>';
+                            $.each(elem['relation'], function (index, pdtb) {
+                                dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
+                                    pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
+                            });
+                        });
+                        dimlex_info += '</ul>';
+                        $("#dimlex_div").html(dimlex_info);
+                    },
+                    error: function () {
+                        alert('Failed!');
+                    },
+                });
+                $('html, body').animate({
+                    scrollTop: $(window).scrollTop() + 400
+                }).delay(300);
+                $('html, body').animate({
+                    scrollTop: $(window).scrollTop() - 400
+                });
+            }
+            // DIMLEX AJAX REQUEST
+        });
+    })
+    ;
+</script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css">
+<script type='text/javascript'>
+    window.onload = function () {
+        $(".chosen-select").chosen({
+                no_results_text: "Oops, nothing found!"
+            }
+        );
+        $('p').hide();
+        $("#select-operator").hide();
+        $("#select-operator").val("none");
+        $('#MS').click(function () {
+                //this.form.submit();
+                if ($(this).is(':checked')) {
+                    $('p').show();
+                    $("[name='sense2List[]").val('').trigger('chosen:updated');
+                    $("#select-operator").show();
+                    $("#select-operator").val("and");
+                }
+                else {
+                    $('p').hide();
+                    $("[name='sense2List[]").val('').trigger('chosen:updated');
+                    $("#select-operator").hide();
+                }
+            }
+        );
+    }
+</script>

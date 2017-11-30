@@ -1,10 +1,42 @@
 import collections
 
 from portal.models import *
+import operator
+
+
+def add_highlight_html(text, tag, index):
+    to_replace = "<span class= '" + tag + "'>" + text[index[0]:index[1]] + "</span>"
+
+    text = text[:index[0]] + to_replace + text[index[1]:]
+    return text
+
+
+def update_html(text, annotation):
+    span_dict = {"conn": annotation['connBeg'],
+                 "conn2": annotation['connBeg2'],
+                 "arg1": annotation['arg1Beg'],
+                 "arg12": annotation['arg1Beg2'],
+                 "arg2": annotation['arg2Beg'],
+                 "arg22": annotation['arg2Beg2'],
+                 }
+    index_dict = {"conn": (annotation['connBeg'], annotation['connEnd']),
+                  "conn2": (annotation['connBeg2'], annotation['connEnd2']),
+                  "arg1": (annotation['arg1Beg'], annotation['arg1End']),
+                  "arg12": (annotation['arg1Beg2'], annotation['arg1End2']),
+                  "arg2": (annotation['arg2Beg'], annotation['arg2End']),
+                  "arg22": (annotation['arg2Beg2'], annotation['arg2End2']),
+                  }
+    sorted_span_dict = sorted(span_dict.items(), key=operator.itemgetter(1), reverse=True)
+
+    for key, value in sorted_span_dict:
+        if value > 0:
+            text = add_highlight_html(text, key, index_dict[key])
+    return text
+
 
 # PDTB Annotation Methods
 def populate_ann_db(file, data, contents, language, user_id):
-   # contents = contents.replace("\n", "")
+    contents = contents.replace("\n", "")
     ann_array = data.split("\n")
     for ann in ann_array:
         if len(ann) > 0 and "Rejected" not in ann:
@@ -61,6 +93,8 @@ def handle_arg_indices(arg):
         arg_index_array.append(int(discont_arg[1].split("..")[0]))
         arg_index_array.append(int(discont_arg[1].split("..")[1]))
     return arg_index_array
+
+
 # PDTB Annotation Methods
 
 def prepareSenseList(senses):
@@ -79,10 +113,10 @@ def prepareSenseList(senses):
 
 def getSensesAllLevel(slist):
     sense_array = [slist[0]]
-    if(len(slist) > 1):
+    if (len(slist) > 1):
         sense_array.append(slist[0] + "." + slist[1])
     if (len(slist) > 2):
-        sense_array.append(slist[0] + "."+ slist[1]+"."+slist[2])
+        sense_array.append(slist[0] + "." + slist[1] + "." + slist[2])
     return sense_array
 
 

@@ -5,6 +5,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script>
 
+    var request_dict = {}
+
     function updateChosenSelect(data, select_html, select_name) {
         $.each(data, function (key, value) {
             select_html += '<option value=' + key + '>' + value + '</option>';
@@ -14,10 +16,9 @@
         $(select_name).val('').trigger('chosen:updated');
     }
 
-
     function fileLoad() {
         $.ajax({
-            url: 'http://localhost:8000/upload/search_page_rest?file=' + $("#file-select").val(),
+            url: 'http://localhost:8000/upload/search_page?file=' + $("#file-select").val(),
             type: 'GET',
             crossDomain: true,
             dataType: 'json',
@@ -47,7 +48,8 @@
                 // fill CONNECTIVE SELECT
 
                 // fill SENSE SELECT
-
+                // ?????
+                // fill SENSE SELECT
 
             },
             error: function () {
@@ -70,96 +72,124 @@
         });
     }
 
-    $(document).ready(function () {
+    function download() {
+        location.replace('http://localhost:8000/download');
+    }
 
-        $("#file-select").change(fileLoad);
-        $("[name='reset']").click(reset);
-        //sense search
-        $("[name='search-button']").click(function () {
-            var ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
+    function senseSearch() {
+        var ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
 
-            if ($("[name='sense1List[]']").val() !== null) {
-                ajax_url = ajax_url + '&sense=' + $("#sense-select").val();
-            }
-            if ($("[name='sense2List[]']").val() !== null) {
-                ajax_url = ajax_url + '&sense2=' + $("[name='sense2List[]']").val();
-                ajax_url = ajax_url + '&op=' + $("[name='operator']").val();
-            }
-            if ($("#conn-select").val() !== null) {
-                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
-            }
-            if ($("#checkbox-form input:checkbox:checked").length > 0) {
-                ajax_url = ajax_url + '&type=';
+        if ($("[name='sense1List[]']").val() !== null) {
+            ajax_url = ajax_url + '&sense=' + $("#sense-select").val();
+        }
+        if ($("[name='sense2List[]']").val() !== null) {
+            ajax_url = ajax_url + '&sense2=' + $("[name='sense2List[]']").val();
+            ajax_url = ajax_url + '&op=' + $("[name='operator']").val();
+        }
+        if ($("#conn-select").val() !== null) {
+            ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+        }
+        if ($("#checkbox-form input:checkbox:checked").length > 0) {
+            ajax_url = ajax_url + '&type=';
 
-                $("input:checkbox[name=discourse_type]:checked").each(function () {
-                    ajax_url = ajax_url + $(this).val() + ",";
+            $("input:checkbox[name=discourse_type]:checked").each(function () {
+                ajax_url = ajax_url + $(this).val() + ",";
+            });
+        }
+        if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
+            ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
+        }
+        $.ajax({
+            url: ajax_url,
+            type: 'GET',
+            crossDomain: true,
+            dataType: 'json',
+            success: function (data) {
+                var content = data["text"];
+                var annotation_list = data["annotation_list"]
+                content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                var count = 1;
+                $.each(annotation_list, function (key, value) {
+                    if (key.indexOf("text") < 0) {
+                        annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                        count += 1;
+                    }
                 });
-            }
-            if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
-                ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
-            }
+                annotation_data += '</select>';
+                $('#info').text(count - 1 + " relations have been found.");
+
+                $('#annotation-select').html(annotation_data);
+                $("#txt").html(JSON.stringify(content));
+            },
+            error: function () {
+                alert('Failed!');
+            },
+        });
+        // DIMLEX AJAX REQUEST
+        if (ajax_url.indexOf(('conn')) > 0) {
             $.ajax({
-                url: ajax_url,
+                url: "http://localhost:8000/get_sense_wrt_connective?connective=" + $("#conn-select").val() + "&lang=English",
                 type: 'GET',
                 crossDomain: true,
                 dataType: 'json',
                 success: function (data) {
-                    var content = data["text"];
-                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                    var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
-                    var count = 1;
-                    $.each(data, function (key, value) {
-                        if (key.indexOf("text") < 0) {
-                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                            count += 1;
-                        }
+                    var dimlex_info = "<ul>"
+                    $.each(data, function (index, elem) {
+                        dimlex_info += 'DIMLEX<br> <b>' + elem['word'] + '</b>';
+                        $.each(elem['relation'], function (index, pdtb) {
+                            dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
+                                pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
+                        });
                     });
-                    annotation_data += '</select>';
-                    $('#info').text(count - 1 + " relations have been found.");
-
-                    $('#annotation-select').html(annotation_data);
-                    $("#txt").html(JSON.stringify(content));
+                    dimlex_info += '</ul>';
+                    $("#dimlex_div").html(dimlex_info);
                 },
                 error: function () {
                     alert('Failed!');
                 },
             });
-            // DIMLEX AJAX REQUEST
-            if (ajax_url.indexOf(('conn')) > 0) {
-                $.ajax({
-                    url: "http://localhost:8000/get_sense_wrt_connective?connective=" + $("#conn-select").val() + "&lang=English",
-                    type: 'GET',
-                    crossDomain: true,
-                    dataType: 'json',
-                    success: function (data) {
-                        var dimlex_info = "<ul>"
-                        $.each(data, function (index, elem) {
-                            dimlex_info += 'DIMLEX<br> <b>' + elem['word'] + '</b>';
-                            $.each(elem['relation'], function (index, pdtb) {
-                                dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
-                                    pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
-                            });
-                        });
-                        dimlex_info += '</ul>';
-                        $("#dimlex_div").html(dimlex_info);
-                    },
-                    error: function () {
-                        alert('Failed!');
-                    },
-                });
-                $('html, body').animate({
-                    scrollTop: $(window).scrollTop() + 400
-                }).delay(300);
-                $('html, body').animate({
-                    scrollTop: $(window).scrollTop() - 400
-                });
-            }
-            // DIMLEX AJAX REQUEST
+            $('html, body').animate({
+                scrollTop: $(window).scrollTop() + 400
+            }).delay(300);
+            $('html, body').animate({
+                scrollTop: $(window).scrollTop() - 400
+            });
+        }
+        // DIMLEX AJAX REQUEST
+    }
+
+    function highlight() {
+        $.ajax({
+            url: "http://localhost:8000/highlight_rest?annotation=" + $("#annotation-select").val(),
+            type: 'GET',
+            crossDomain: true,
+            dataType: 'text',
+            success: function (data) {
+                content = data.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+
+                $("#txt").html(JSON.stringify(content));
+            },
+            error: function () {
+                alert('Failed!');
+            },
         });
+
+    }
+
+
+    $(document).ready(function () {
+
+        $("#file-select").change(fileLoad);
+        $("[name='reset']").click(reset);
+        $("[name='download-button']").click(download);
+        $("[name='search-button']").click(senseSearch);
+        $("#annotation-select").click(highlight);
+
     })
     ;
 </script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css">
 <script type='text/javascript'>

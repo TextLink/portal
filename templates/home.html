@@ -1,6 +1,3 @@
-{% extends 'base.html' %}
-
-
 
 {% block content %}
     <h1>Welcome to TextLink Portal</h1>
@@ -13,18 +10,5 @@
   </ul>
 
 
-
-
-  <p>Uploaded files so far:</p>
-  <ul>
-    {% for obj in documents %}
-      <li>
-        Ann: <a href="">{{ obj.ann_file.name }}</a>
-      </li>
-        <li>
-        Raw: <a href="">{{ obj.raw_file.name }}</a>
-      </li>
-    {% endfor %}
-  </ul>
 {% endblock %}
 

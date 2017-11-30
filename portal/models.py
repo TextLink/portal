@@ -11,6 +11,12 @@ class uploaded_files(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 
+class ted_mdb_files(models.Model):
+    filename = models.CharField(max_length=500, default="")
+    raw_file = models.TextField()
+    language = models.CharField(max_length=100, null=True)
+
+
 class pdtbAnnotation(models.Model):
     type = models.CharField(max_length=30, null=False)
     conn = models.CharField(max_length=30, null=True)
@@ -38,10 +44,10 @@ class pdtbAnnotation(models.Model):
     arg2End = models.IntegerField()
     arg2Beg2 = models.IntegerField(null=True)
     arg2End2 = models.IntegerField(null=True)
-    arg2End2 = models.CharField(max_length=100, null=True)
     # language
     language = models.CharField(max_length=100, null=True)
     userid = models.CharField(max_length=100, null=False, default="none")
+
 
 class ted_mdb_annotation(models.Model):
     ann_id = models.CharField(max_length=30, null=False)
@@ -71,13 +77,15 @@ class ted_mdb_annotation(models.Model):
     arg2End = models.IntegerField()
     arg2Beg2 = models.IntegerField(null=True)
     arg2End2 = models.IntegerField(null=True)
-    arg2End2 = models.CharField(max_length=100, null=True)
     # language
     language = models.CharField(max_length=100, null=True)
 
+
 class ted_mdb_alignment(models.Model):
-    fl_id = models.CharField(max_length=30, null=False, unique=True)
-    sl_id = models.CharField(max_length=30, null=False, unique=True)
+    fl_id = models.CharField(max_length=30, null=False, default="en-1")
+    fl_file = models.CharField(max_length=500, null=False, default="file")
+    sl_id = models.CharField(max_length=30, null=False, default="en-1")
+    sl_file = models.CharField(max_length=500, null=False, default="file")
 
 
 

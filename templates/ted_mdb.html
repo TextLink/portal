@@ -13,13 +13,18 @@
         background-color:lightblue;
     }
 
-
+    .section {
+        float: left;
+        width: 50%;
+        padding: 10px;
+        height: 700px; /* Should be removed. Only for demonstration */
+    }
 
     #txt {
         border-radius: 25px;
         border: 2px dotted;
         position: relative;
-        height: 800px;
+        height: 600px;
         white-space: pre-wrap;
         font-size: 16px;
         overflow-y: scroll;
@@ -43,13 +48,6 @@
         overflow: scroll;
     }
 
-    #upload_div {
-        float: right;
-        width: 270px;
-        overflow: scroll;
-        background-color: cadetblue;
-    }
-
     #dimlex_div {
         float: right;
         background-color: azure;
@@ -70,10 +68,10 @@
 </style>
 <!DOCTYPE html>
 <html lang="en">
-{% include 'js/search_utils.html' %}
+{% include 'js/ted_mdb_utils.html' %}
 
 <head>
-    <title>Search Annotations</title>
+    <title>TED-MDB Search</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -81,22 +79,31 @@
 </head>
 <body>
 <br>
-<form action="search_page.html" method="get">
-    {% csrf_token %}
-    <select id='file-select' name='file-select' method="get">
-        {% for obj in documents %}
-            <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
-        {% endfor %}
-    </select>
-</form>
 
-<div id='upload_div' name='upload_div' contenteditable='false'>
-    Click here to upload new files:
-    <form action="" method="post">
-        {% csrf_token %}
-        <input type="submit" name="upload-button" value="Upload">
-    </form>
-</div>
+
+<select id='language-select' name='language-select' method="get">
+    {% for lang in all_languages %}
+        <option value="{{ lang.language }} ">{{ lang.language }}</option>
+    {% endfor %}
+</select>
+{% csrf_token %}
+<select id='file-select' name='file-select' method="get">
+    {% for obj in documents %}
+        <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+    {% endfor %}
+</select>
+<br>
+<select id='second-language-select' name='second-language-select' method="get" hidden>
+    {% for lang in all_languages %}
+        {% if 'Eng' not in lang.language %}
+            <option value="{{ lang.language }} ">{{ lang.language }}</option>
+        {% endif %}
+
+    {% endfor %}
+</select>
+
+<br>
+<br>
 
 <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple class='chosen-select'
         tabindex='11'>
@@ -150,27 +157,47 @@
 </form>
 <button class="button" name="search-button">Search</button>
 
-<button class="button" name="download-button" id="download-button">DOWNLOAD</button>
-
 <button name="reset">Reset</button>
-<div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
+<br>
 
-<select name='annotationList' id='annotation-select' multiple size='30'>
-    {% for ann in annotations %}
-        <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }}) | {{ ann.sense1 }}
-            | {{ ann.sense2 }}</option>
-    {% endfor %}
-</select>
+<div class="section" id="first_language">
+    <div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
+
+    <select name='annotationList' id='annotation-select' multiple size='30'>
+        {% for ann in annotations %}
+            <option value="{{ ann.ann_id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+                | {{ ann.sense1 }}
+                | {{ ann.sense2 }}</option>
+        {% endfor %}
+    </select>
 
 
-<div id='txt' name='out' contenteditable='false'>
-    {{ selectedFile.raw_file.read }}
+    <div id='txt' name='out' contenteditable='false'>
+        {{ selected_file_content }}
+    </div>
+    <div id="dimlex_div"><h2>Dimlex</h2></div>
+</div>
+
+
+<div class="section" id="second_language">
+    <div id="info" class="alert alert-success"> {{ eng_annotations|length }} relations have been found</div>
+
+    <select name='annotationList' id='annotation-select' multiple size='30'>
+        {% for ann in eng_annotations %}
+            <option value="{{ ann.ann_id }} ">{{ ann.ann_id }} - {{ ann.conn }} ({{ ann.type }})
+                | {{ ann.sense1 }}
+                | {{ ann.sense2 }}</option>
+        {% endfor %}
+    </select>
+
+    <div id='txt' name='out' contenteditable='false'>
+        {{ eng_text }}
+
+    </div>
+    <div id="dimlex_div"><h2>Dimlex</h2></div>
 </div>
 
 <p><a href="{% url 'home' %}">Return to home</a></p>
-
-
-<div id="dimlex_div"><h2>Dimlex</h2></div>
 
 
 </body>

@@ -152,12 +152,13 @@
 </style>
 <!DOCTYPE html>
 <html lang="en">
-{% include 'js/search_utils.html' %}
+{% include 'js/search_utils_2.html' %}
 
 <head>
     <title>Search Annotations</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
 <body>
 <div class="fixed-navbar">
@@ -191,7 +192,7 @@
     <div>
         <div class="teset">
             <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class'
-                    class='select'>
+                  multiple  class='chosen-select'>
                 {% for sense in senses %}
                     {% if '.' not in sense %}
                         </optgroup>
