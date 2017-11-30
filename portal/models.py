@@ -9,13 +9,13 @@ class uploaded_files(models.Model):
     ann_file = models.FileField(upload_to='forms/')
     raw_file = models.FileField(upload_to='forms/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    user_id = models.CharField(max_length=100, null=False, default="none")
+    user_id = models.CharField(max_length=1000, null=False, default="none")
 
 
 class pdtbAnnotation(models.Model):
     type = models.CharField(max_length=30, null=False)
-    conn = models.CharField(max_length=30, null=True)
-    conn2 = models.CharField(max_length=30, null=True)
+    conn = models.CharField(max_length=250, null=True)
+    conn2 = models.CharField(max_length=250, null=True)
     connBeg = models.IntegerField(null=True)
     connEnd = models.IntegerField(null=True)
     connBeg2 = models.IntegerField(null=True)
@@ -41,7 +41,7 @@ class pdtbAnnotation(models.Model):
     arg2End2 = models.IntegerField(null=True)
     # language
     language = models.CharField(max_length=100, null=True)
-    user_id = models.CharField(max_length=100, null=False, default="none")
+    user_id = models.CharField(max_length=1000, null=False, default="none")
 
 
 class ted_mdb_files(models.Model):
