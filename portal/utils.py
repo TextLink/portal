@@ -1,8 +1,7 @@
 import collections
 
 from portal.models import *
-import operator
-from collections import Counter
+
 
 def add_highlight_html(text, tag, index):
     to_replace = "<span class= '" + tag + "'>" + text[index[0]:index[1]] + "</span>"
@@ -11,20 +10,7 @@ def add_highlight_html(text, tag, index):
     return text
 
 
-def check_overlapping(span_dict, index_dict):
-    new_dict = {}
-    for k, v in span_dict.iteritems():
-        new_dict.setdefault(v, []).append(k)
-    for k, v in new_dict:
-        if len(v) > 1 and k != -1:
-            duplicate = v;
-    t = ""
-
 def update_html(text, annotation):
-    values = annotation.values()
-
-
-
     span_dict = {"conn": annotation['connBeg'],
                  "conn2": annotation['connBeg2'],
                  "arg1": annotation['arg1Beg'],
@@ -37,8 +23,6 @@ def update_html(text, annotation):
                   "arg12": (annotation['arg1Beg2'], annotation['arg1End2']),
                   "arg2": (annotation['arg2Beg'], annotation['arg2End']),
                   "arg22": (annotation['arg2Beg2'], annotation['arg2End2'])}
-
-    check_overlapping(span_dict, index_dict)
 
     sorted_span_dict = sorted(span_dict.items(), key=lambda s: s[0], reverse=True)
 

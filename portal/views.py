@@ -44,13 +44,14 @@ def upload_annotations(request):
 
 def highlight_rest(request):
     if request.method == 'GET' and 'annotation' in request.GET:
-        annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('connBeg', 'connEnd',
-                                                                                        'connBeg2', 'connEnd2',
-                                                                                        'arg1Beg', 'arg1End',
-                                                                                        'arg1Beg2', 'arg1End2',
-                                                                                        'arg2Beg', 'arg2End',
-                                                                                        'arg2Beg2', 'arg2End2',
-                                                                                        'file')[0]
+        annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation'],
+                                                   user_id=request.session['user_id']).values('connBeg', 'connEnd',
+                                                                                              'connBeg2', 'connEnd2',
+                                                                                              'arg1Beg', 'arg1End',
+                                                                                              'arg1Beg2', 'arg1End2',
+                                                                                              'arg2Beg', 'arg2End',
+                                                                                              'arg2Beg2', 'arg2End2',
+                                                                                              'file')[0]
         text = uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read().replace("\n", "")
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
@@ -241,7 +242,7 @@ def search_sense_rest(request):
     content = selected_file.raw_file.read()
     annotation_list = dict()
     annotations = pdtbAnnotation.objects.filter(file=selected_file_name,
-                                                  user_id=request.session['user_id'])
+                                                user_id=request.session['user_id'])
     # SENSE1, !SENSE2
     if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
         selected_senses = request.GET['sense'].replace(" ", "")
@@ -286,16 +287,17 @@ def search_page_rest(request):
 
     if request.method == 'GET' and 'file' in request.GET:
         selected_file_name = request.GET['file']
-        selected_file = uploaded_files.objects.filter(filename=selected_file_name, user_id=request.session['user_id']).first()
+        selected_file = uploaded_files.objects.filter(filename=selected_file_name,
+                                                      user_id=request.session['user_id']).first()
         content = selected_file.raw_file.read()
         annotations = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id'])
         annotation_list = dict()
         for a in annotations:
-            annotation_list[a.id] = a.conn + "(" + a.type + ")"
-
+            annotation_list[a.id] = a.conn + "(" + a.type + ") | " + a.sense1 + "|" + a.sense2
         connective_list = dict()
         connectives = pdtbAnnotation.objects.filter(Q(type="Explicit") | Q(type="AltLex"),
-                                                    file=selected_file_name, user_id=request.session['user_id']).order_by('conn').distinct()
+                                                    file=selected_file_name,
+                                                    user_id=request.session['user_id']).order_by('conn').distinct()
         for c in connectives:
             connective_list[c.conn] = c.conn + "(" + c.type + ")"
 
@@ -315,8 +317,11 @@ def search_page_rest(request):
     selected_file_name = first.filename
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
     annotations = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id'])
-    senses = pdtbAnnotation.objects.values('sense1', 'sense2').distinct()
-    connectives = pdtbAnnotation.objects.values('conn', 'conn2', 'type').distinct()
+    senses = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id']).values('sense1',
+                                                                                                               'sense2').distinct()
+    connectives = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id']).values(
+        'conn', 'conn2',
+        'type').distinct()
     connective_array = prepareConnList(connectives)
 
     request.session['search_results'] = annotations

@@ -281,7 +281,7 @@
 </div>
 <select name='annotationList' id='annotation-select' multiple size='30'>
     {% for ann in annotations %}
-        <option value="{{ forloop.counter }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+        <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
             | {{ ann.sense1 }}
             | {{ ann.sense2 }}</option>
     {% endfor %}
