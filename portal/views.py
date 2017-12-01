@@ -57,7 +57,7 @@ def highlight_rest(request):
         #        "\n", "")
         with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
                          encoding='utf8') as f:
-            text = f.read()
+            text = f.read().replace("\n", "")
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \

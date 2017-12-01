@@ -9,13 +9,18 @@ def add_highlight_html(text, tag, index):
     return text
 
 
+def handle_overlapping(dict):
+    if dict['conn'][0] == dict['arg1'][0] and dict['arg1'][1] > dict['conn'][1]:
+        dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
+        dict['arg1'] = (dict['conn'][1], dict['arg1'][1])
+        dict.pop('conn')
+    elif dict['conn'][0] == dict['arg2'][0] and dict['arg2'][1] > dict['conn'][1]:
+        dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
+        dict['arg2'] = (dict['conn'][1], dict['arg2'][1])
+        dict.pop('conn')
+
+
 def update_html(text, annotation):
-    span_dict = {"conn": annotation['connBeg'],
-                 "conn2": annotation['connBeg2'],
-                 "arg1": annotation['arg1Beg'],
-                 "arg12": annotation['arg1Beg2'],
-                 "arg2": annotation['arg2Beg'],
-                 "arg22": annotation['arg2Beg2']}
     index_dict = {"conn": (annotation['connBeg'], annotation['connEnd']),
                   "conn2": (annotation['connBeg2'], annotation['connEnd2']),
                   "arg1": (annotation['arg1Beg'], annotation['arg1End']),
@@ -23,16 +28,44 @@ def update_html(text, annotation):
                   "arg2": (annotation['arg2Beg'], annotation['arg2End']),
                   "arg22": (annotation['arg2Beg2'], annotation['arg2End2'])}
 
-    sorted_span_dict = sorted(span_dict.items(), key=lambda s: s[0], reverse=True)
+    handle_overlapping(index_dict)
+    span_beg_dict = {}
 
-    for key, value in sorted_span_dict:
-        if value > 0:
+    for key in index_dict.keys():
+        span_beg_dict[key] = index_dict[key][0]
+
+    ''' 
+    keys = span_beg_dict.keys()
+    beg_values = span_beg_dict.values()
+    end_values = span_end_dict.values()
+
+    indexes = []
+    for key, value in index_dict:
+        indexes.append(value[0])
+        indexes.append(value[1])
+
+    r_sorted_indexes = sorted(indexes, reverse=True)
+    prev = r_sorted_indexes[0]
+    curr = 0
+
+    for i in range(1, len(r_sorted_indexes)):
+        curr = r_sorted_indexes[i]
+
+        if prev != curr
+'''
+
+    span_dict_value = span_beg_dict.values()
+    span_dict_key = span_beg_dict.keys()
+    sorted_span_dic_values = sorted(span_dict_value, reverse=True)
+
+    for s in sorted_span_dic_values:
+        if s > 0:
+            key = span_dict_key[span_dict_value.index(s)]
             text = add_highlight_html(text, key, index_dict[key])
 
-    return text
+    return text  # PDTB Annotation Methods
 
 
-# PDTB Annotation Methods
 def populate_ann_db(file, data, contents, language, user_id):
     contents = contents.replace("\n", "")
     ann_array = data.split("\n")
