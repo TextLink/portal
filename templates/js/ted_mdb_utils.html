@@ -147,8 +147,6 @@
                 });
                 $('#second_language').find('#annotation-select').val(eng_key);
                 $('#second_language').find('#annotation-select').change();
-                alert('2 findAligned: ' + eng_key);
-
             },
             error: function () {
                 alert('This annotation does not have a counterpart in English!');
@@ -174,14 +172,13 @@
                 //   alert("highlight1" + $('#first_language').find("#annotation-select").val())
             },
             error: function () {
-                alert('Failed! highlight1');
+                alert(' highlight1 Failed!');
             },
         });
     }
 
     function highlightSecond() {
 
-        alert("h2: " + $('#second_language').find('#annotation-select').val());
         $.ajax({
             url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val(),
             type: 'GET',
@@ -192,7 +189,7 @@
                 $('#second_language').find("#txt").html(JSON.stringify(content));
             },
             error: function () {
-                alert('Failed!');
+                alert(' highlight2 Failed!');
             },
         });
     }

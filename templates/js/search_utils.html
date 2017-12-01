@@ -140,13 +140,13 @@
                 success: function (data) {
                     var dimlex_info = "<ul>"
                     $.each(data, function (index, elem) {
-                        dimlex_info += 'DIMLEX<br> <b>' + elem['word'] + '</b>';
+                        dimlex_info += '<table>  <tr> <th>Connective: ' + $("#conn-select").val() + '</th>  </tr> ';
                         $.each(elem['relation'], function (index, pdtb) {
-                            dimlex_info += '<li>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
-                                pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</li>'
+                            dimlex_info += ' <tr> <td>' + pdtb['pdtb2_relation'][0]['sense'] + '(' + pdtb['pdtb2_relation'][0]['freq'] + '/' +
+                                pdtb['pdtb2_relation'][0]['anno_N'] + ')' + '</td> </tr>'
                         });
                     });
-                    dimlex_info += '</ul>';
+                    dimlex_info += '</table>';
                     $("#dimlex_div").html(dimlex_info);
                 },
                 error: function () {
@@ -170,9 +170,7 @@
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
-                content = data.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-
-                $("#txt").html(JSON.stringify(content));
+                $("#txt").html(data);
             },
             error: function () {
                 alert('Failed!');

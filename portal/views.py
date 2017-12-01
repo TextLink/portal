@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+import codecs
 import csv
 import operator
 from django.shortcuts import render, redirect
@@ -51,8 +53,11 @@ def highlight_rest(request):
                                                                                         'arg2Beg', 'arg2End',
                                                                                         'arg2Beg2', 'arg2End2',
                                                                                         'file')[0]
-        text = smart_unicode(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read()).replace(
-            "\n", "")
+        #    text = smart_unicode(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read()).replace(
+        #        "\n", "")
+        with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
+                         encoding='utf8') as f:
+            text = f.read()
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \
@@ -63,7 +68,7 @@ def highlight_rest(request):
                                                                                                'arg2Beg', 'arg2End',
                                                                                                'arg2Beg2', 'arg2End2',
                                                                                                'file')[0]
-        text = ted_mdb_files.objects.filter(filename=annotation['file'])[0].raw_file.read()
+        text = ted_mdb_files.objects.filter(filename=annotation['file'])[0].raw_file
 
     text = update_html(text, annotation)
     return HttpResponse(text)
@@ -236,12 +241,10 @@ def search_sense_rest(request):
         return redirect('upload_annotations.html')
 
     selected_file_name = request.GET['file']
-    selected_file = uploaded_files.objects.filter(filename=selected_file_name,
-                                                  user_id=request.session['user_id']).first()
+    selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
     content = selected_file.raw_file.read()
     annotation_list = dict()
-    annotations = pdtbAnnotation.objects.filter(file=selected_file_name,
-                                                user_id=request.session['user_id'])
+    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
     # SENSE1, !SENSE2
     if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
         selected_senses = request.GET['sense'].replace(" ", "")

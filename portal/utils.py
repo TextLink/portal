@@ -5,7 +5,6 @@ from portal.models import *
 
 def add_highlight_html(text, tag, index):
     to_replace = "<span class= '" + tag + "'>" + text[index[0]:index[1]] + "</span>"
-
     text = text[:index[0]] + to_replace + text[index[1]:]
     return text
 
