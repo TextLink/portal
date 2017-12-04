@@ -1,42 +1,112 @@
 <style type="text/css">
 
-    .conn, .conn2
-    {
-        background-color:magenta;
-    }
-    .arg1, .arg12
-    {
-        background-color:lime;
-    }
-    .arg2, .arg22
-    {
-        background-color:lightblue;
+    .conn, .conn2 {
+        background-color: magenta;
     }
 
-    .section {
+    .arg1, .arg12 {
+        background-color: lime;
+    }
+
+    .arg2, .arg22 {
+        background-color: lightblue;
+    }
+
+    .overlapping {
+        background-color: darkgoldenrod;
+
+    }
+
+    body {
+        margin: 0;
+    }
+
+    button.accordion {
+        background-color: #eee;
+        color: #444;
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 18px;
+        transition: 0.4s;
+    }
+
+    button.accordion.active, button.accordion:hover {
+        background-color: #ccc;
+    }
+
+    button.accordion:after {
+        content: '\002B';
+        color: #777;
+        font-weight: bold;
+        float: right;
+        margin-left: 5px;
+    }
+
+    button.accordion.active:after {
+        content: "\2212";
+    }
+
+    .fixed-navbar {
+        overflow: hidden;
+        background-color: #8B4513;
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+
+    .fixed-navbar a {
         float: left;
-        width: 50%;
-        padding: 10px;
-        height: 700px; /* Should be removed. Only for demonstration */
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .file-div {
+        background-color: #FFF8DC;
+        float: right;
+        position: relative;
+        width: 100%;
+    }
+
+    .file-div a {
+        float: left;
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .my-main {
+        padding: 16px;
+        margin-top: 10px;
     }
 
     #txt {
-        border-radius: 25px;
-        border: 2px dotted;
+        border: 1px dotted;
         position: relative;
         height: 600px;
         white-space: pre-wrap;
         font-size: 16px;
         overflow-y: scroll;
         resize: vertical;
+        padding-top: 10px;
     }
 
     #annotation-select {
         float: left;
-        width: 12vw;
+        width: 15vw;
         resize: vertical;
         overflow: scroll;
-        height: 800px;
+        height: 600px;
         font-family: 'Times New Roman';
         font-size: 16px;
     }
@@ -48,9 +118,8 @@
         overflow: scroll;
     }
 
-    #dimlex_div {
+    #upload_div {
         float: right;
-        background-color: azure;
     }
 
     #button {
@@ -65,6 +134,48 @@
         cursor: pointer;
         font-size: 10px;
     }
+
+    .my-parent div {
+        float: left;
+        margin: 10px;
+    }
+
+    #file_menu {
+        background-color: #D2B48C;
+    }
+
+    #se-demo {
+        background-color: #D2B48C;
+    }
+
+    .teset {
+        float: left;
+    }
+
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+
+    .section {
+        float: left;
+        width: 50%;
+        height: 80px;
+        padding: 10px;
+        padding-bottom: 20px;
+        background-color: #dff0d8;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,91 +189,111 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
-<br>
+<div class="fixed-navbar">
+    <a href="#home">Home</a>
+    <a href="#usage">Usage</a>
+    <a href="#contact">Contact</a>
+    <a style="float:right" href="/ted_mdb">TED-MDB</a>
+</div>
 
+<button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File/Language Menu</button>
+<div id="file_menu" class="collapse">
+    <br>
 
-<select id='language-select' name='language-select' method="get">
-    {% for lang in all_languages %}
-        <option value="{{ lang.language }} ">{{ lang.language }}</option>
-    {% endfor %}
-</select>
-{% csrf_token %}
-<select id='file-select' name='file-select' method="get">
-    {% for obj in documents %}
-        <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
-    {% endfor %}
-</select>
-<br>
-<select id='second-language-select' name='second-language-select' method="get" hidden>
-    {% for lang in all_languages %}
-        {% if 'Eng' not in lang.language %}
+    <select id='language-select' name='language-select' method="get">
+        {% for lang in all_languages %}
             <option value="{{ lang.language }} ">{{ lang.language }}</option>
-        {% endif %}
-
-    {% endfor %}
-</select>
-
-<br>
-<br>
-
-<select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple class='chosen-select'
-        tabindex='11'>
-    {% for sense in senses %}
-        {% if '.' not in sense %}
-            </optgroup>
-            <optgroup label="{{ sense }} ">
-
-        {% endif %}
-        <option value="{{ sense }} ">{{ sense }} </option>
-    {% endfor %}
-</select>
-<p>
-    <select id="select-operator" name="operator">
-        <option value="none" hidden></option>
-        <option value="and">and</option>
-        <option value="not">not</option>
+        {% endfor %}
     </select>
-    <select name='sense2List[]' id='sense-select' data-placeholder='Second Semantic Class' multiple
-            class='chosen-select'
+    {% csrf_token %}
+    <select id='file-select' name='file-select' method="get">
+        {% for obj in documents %}
+            <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <select id='second-language-select' name='second-language-select' method="get" hidden>
+        {% for lang in all_languages %}
+            {% if 'Eng' not in lang.language %}
+                <option value="{{ lang.language }} ">{{ lang.language }}</option>
+            {% endif %}
+
+        {% endfor %}
+    </select>
+
+    <br>
+    <br>
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
+<div id="se-demo" class="collapse">
+        <div class="teset">
+
+    <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple class='chosen-select'
             tabindex='11'>
         {% for sense in senses %}
             {% if '.' not in sense %}
                 </optgroup>
                 <optgroup label="{{ sense }} ">
-
             {% endif %}
             <option value="{{ sense }} ">{{ sense }} </option>
         {% endfor %}
     </select>
-</p>
-<div class="MSbox">
-    <input type="checkbox" id="MS" name="MS" value="1">
-    Multiple Sense Search
-    <input type="hidden" id="MS" name="MS" value="0"/>
+        </div>
+    <div class="teset">
+
+        <p>
+            <select id="select-operator" name="operator">
+                <option value="none" hidden></option>
+                <option value="and">and</option>
+                <option value="not">not</option>
+            </select>
+            <select name='sense2List[]' id='sense-select' data-placeholder='Second Semantic Class' multiple
+                    class='chosen-select'
+                    tabindex='11'>
+                {% for sense in senses %}
+                    {% if '.' not in sense %}
+                        </optgroup>
+                        <optgroup label="{{ sense }} ">
+
+                    {% endif %}
+                    <option value="{{ sense }} ">{{ sense }} </option>
+                {% endfor %}
+            </select>
+        </p>
+    </div>
+
+    <br>
+    <br>
+    <div class="MSbox">
+        <input type="checkbox" id="MS" name="MS" value="1">
+        Multiple Sense Search
+        <input type="hidden" id="MS" name="MS" value="0"/>
+    </div>
+    <br>
+
+    <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
+            tabindex='11'>
+        {% for key, value in connective_array.items %}
+            <option value="{{ key }} "> {{ key }} </option>
+        {% endfor %}
+    </select>
+    <form class="alert alert-info" id="checkbox-form">
+
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+    </form>
+    <button class="button" name="search-button">Search</button>
+
+    <button name="reset">Reset</button>
+    <br>
+
 </div>
-<br>
-
-<select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
-        tabindex='11'>
-    {% for key, value in connective_array.items %}
-        <option value="{{ key }} "> {{ key }} </option>
-    {% endfor %}
-</select>
-<form class="alert alert-info" id="checkbox-form">
-
-    <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
-    <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
-    <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
-    <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
-</form>
-<button class="button" name="search-button">Search</button>
-
-<button name="reset">Reset</button>
-<br>
 
 <div class="section" id="first_language">
-    <div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
 
+    <div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
     <select name='annotationList' id='annotation-select' multiple size='30'>
         {% for ann in annotations %}
             <option value="{{ ann.ann_id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
@@ -175,11 +306,11 @@
     <div id='txt' name='out' contenteditable='false'>
         {{ selected_file_content }}
     </div>
-    <div id="dimlex_div"><h2>Dimlex</h2></div>
 </div>
 
 
 <div class="section" id="second_language">
+
     <div id="info" class="alert alert-success"> {{ eng_annotations|length }} relations have been found</div>
 
     <select name='annotationList' id='annotation-select' multiple size='30'>
@@ -192,9 +323,7 @@
 
     <div id='txt' name='out' contenteditable='false'>
         {{ eng_text }}
-
     </div>
-    <div id="dimlex_div"><h2>Dimlex</h2></div>
 </div>
 
 <p><a href="{% url 'home' %}">Return to home</a></p>

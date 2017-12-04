@@ -4,6 +4,8 @@ from portal.models import *
 
 
 def add_highlight_html(text, tag, index):
+    if "arg1" in tag:
+        tag = "arg1'" + "id='anno"
     to_replace = "<span class= '" + tag + "'>" + text[index[0]:index[1]] + "</span>"
     text = text[:index[0]] + to_replace + text[index[1]:]
     return text
@@ -17,6 +19,19 @@ def handle_overlapping(dict):
     elif dict['conn'][0] == dict['arg2'][0] and dict['arg2'][1] > dict['conn'][1]:
         dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
         dict['arg2'] = (dict['conn'][1], dict['arg2'][1])
+        dict.pop('conn')
+    elif dict['conn'][0] == dict['arg2'][0] and dict['conn'][1] == dict['conn'][1]:
+        dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
+        dict.pop('conn')
+        dict.pop('arg2')
+    elif dict['conn'][1] == dict['arg2'][1] and dict['conn'][0] < dict['arg2'][1]:
+        dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
+        dict['arg2'] = (dict['arg2'][0], dict['conn'][0])
+        dict.pop('conn')
+    elif dict['conn'][0] > dict['arg2'][0] and dict['conn'][1] < dict['arg2'][1]:
+        dict['overlapping'] = (dict['conn'][0], dict['conn'][1])
+        dict['arg2'] = (dict['arg2'][0], dict['conn'][0])
+        dict['arg22'] = (dict['conn'][1], dict['arg2'][1])
         dict.pop('conn')
 
 

@@ -9,7 +9,6 @@
 
 <script>
 
-    var request_dict = {}
 
     function updateChosenSelect(data, select_html, select_name) {
         $.each(data, function (key, value) {
@@ -171,6 +170,8 @@
             dataType: 'text',
             success: function (data) {
                 $("#txt").html(data);
+                document.getElementById("anno").scrollIntoView();
+
             },
             error: function () {
                 alert('Failed!');

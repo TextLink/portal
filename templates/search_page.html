@@ -140,7 +140,7 @@
         margin: 10px;
     }
 
-    #demo {
+    #file_menu {
         background-color: #D2B48C;
     }
 
@@ -167,6 +167,15 @@
     tr:nth-child(even) {
         background-color: #dddddd;
     }
+
+    .section {
+        float: left;
+        width: 50%;
+        height: 90px;
+        padding: 10px;
+        padding-bottom: 10px;
+        background-color: #D2B48C;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -183,24 +192,34 @@
     <a href="#usage">Usage</a>
     <a href="#contact">Contact</a>
     <a style="float:right" href="/ted_mdb">TED-MDB</a>
-    <a style="float:right" href="#file-upload">Search</a>
 </div>
-<button type="button" class="accordion" data-toggle="collapse" data-target="#demo">File Menu</button>
-<div id="demo" class="collapse">
-    Selected File:
-    <form action="to_be_deleted/old_search_page.html" method="get">
+<button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
+<div id="file_menu" class="collapse">
+
+    <div id="file_select" class="section">
+        Selected File:
+        <br>
         {% csrf_token %}
         <select id='file-select' name='file-select' method="get">
             {% for obj in documents %}
                 <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
             {% endfor %}
+
         </select>
-    </form>
-    Click here to upload new files:
-    <form action="" method="post">
-        {% csrf_token %}
-        <input type="submit" name="upload-button" value="Upload">
-    </form>
+
+    </div>
+
+
+    <div id="upload_div" class="section">
+        <h4 style="float:right">Click here to upload new files </h4>
+<br>
+            <br>
+
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" name="upload-button" value="Upload"  style="float:right">
+        </form>
+    </div>
     <br>
 </div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>

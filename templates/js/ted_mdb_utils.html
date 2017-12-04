@@ -167,8 +167,8 @@
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
-                content = data.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#first_language').find("#txt").html(JSON.stringify(content));
+                $('#first_language').find("#txt").html(data);
+                document.getElementById("anno").scrollIntoView();
                 //   alert("highlight1" + $('#first_language').find("#annotation-select").val())
             },
             error: function () {
@@ -185,8 +185,9 @@
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
-                content = data.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#second_language').find("#txt").html(JSON.stringify(content));
+                $('#second_language').find("#txt").html(data);
+                $('#second_language').find("#txt").getElementById("anno").scrollIntoView();
+
             },
             error: function () {
                 alert(' highlight2 Failed!');
@@ -305,6 +306,8 @@
 <script type='text/javascript'>
     window.onload = function () {
         $(".chosen-select").chosen({
+                            width: '250px',
+
                 no_results_text: "Oops, nothing found!"
             }
         );
