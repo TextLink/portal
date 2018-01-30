@@ -74,7 +74,7 @@ def highlight_rest(request):
     return HttpResponse(text)
 
 
-####### TED - MDB
+####### TED - MDB  #######
 
 def ted_mdb(request):
     if request.method == 'GET' and 'language' in request.GET and "sec_lang" not in request.GET:
@@ -233,7 +233,7 @@ def ted_mdb_get_aligned(request):
             pass
 
 
-####### TED - MDB
+####### TED - MDB  #######
 
 
 def search_sense_rest(request):
