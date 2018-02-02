@@ -306,7 +306,6 @@ def search_page_rest(request):
         result['connective_list'] = connective_list
         result['text'] = content
         request.session['search_results'] = annotations
-
         return HttpResponse(json.dumps(result))
 
     if request.method == 'POST':
