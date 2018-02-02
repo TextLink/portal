@@ -79,6 +79,10 @@
         location.replace('http://localhost:8000/download');
     }
 
+    function download_pdtb() {
+        location.replace('http://localhost:8000/download_pdtb');
+    }
+
     function senseSearch() {
         var ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
 
@@ -184,6 +188,7 @@
         $("#file-select").change(fileLoad);
         $("[name='reset']").click(reset);
         $("[name='download-button']").click(download);
+        $("[name='download-pdtb-button']").click(download_pdtb);
         $("[name='search-button']").click(senseSearch);
         $("#annotation-select").click(highlight);
     });
