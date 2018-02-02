@@ -411,7 +411,49 @@ def download_excel(request):
         # Return CSV file to browser as download
     return response
 
+def download_pdtb(request):
+    response = HttpResponse(content_type='text')
+    response['Content-Disposition'] = 'attachment; filename=search_results(pdtb).txt'
+    writer = csv.writer(response)
+    # name = pdtbAnnotation._name_
+    # Write headers to CSV file
+    headers = ["Type", "Sense", "2nd Sense", "Annotation(raw)"]
 
+    writer.writerow(headers)
+    # Write data to CSV file
+    for obj in request.session['search_results']:
+        row = []
+        argMap = dict()
+        argMap[int(obj.connBeg)] = "%" + obj.conn + "%"
+        argMap[int(obj.connBeg2)] = "%" +obj.conn2 + "%"
+        argMap[int(obj.arg1Beg)] = "#" + obj.arg1 + "#"
+        argMap[int(obj.arg2Beg)] = "*" + obj.arg2 + "*"
+        argMap[int(obj.arg1Beg2)] = "#" + obj.arg12 + "#"
+        argMap[int(obj.arg2Beg2)] = "*" + obj.arg22 + "*"
+
+        orderedArgMap = collections.OrderedDict(sorted(argMap.items()))
+        orderedArgMap.pop(-1, None)
+        annotation = ""
+        for a in orderedArgMap:
+            annotation = annotation + " " + orderedArgMap[a]
+        print annotation
+        val = getattr(obj, "type")
+        if callable(val):
+            val = val()
+        row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+        val = getattr(obj, "sense1")
+        if callable(val):
+            val = val()
+        row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+        val = getattr(obj, "sense2")
+        if callable(val):
+            val = val()
+        row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+        row.append(annotation.encode('UTF-8') if isinstance(annotation, basestring) else annotation)
+
+        writer.writerow(row)
+        # Return CSV file to browser as download
+    return response
 
 def get_connectives_wrt_language(request):
     if request.method == 'GET' and 'lang' in request.GET:

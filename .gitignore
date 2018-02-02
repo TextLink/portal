@@ -3,4 +3,4 @@ documents/*
 portal/migrations/*
 db.sqlite3
 resources/*
-portal/TextLinkPortal/settings.py
+TextLinkPortal/settings.py
