@@ -40,7 +40,7 @@ urlpatterns = [
     url(r'^upload/search_sense_rest', csrf_exempt(views.search_sense_rest), name='search_sense_rest'),
 
     url(r'^highlight_rest', csrf_exempt(views.highlight_rest), name='highlight_rest'),
-    url(r'^download/', csrf_exempt(views.download), name='download'),
+    url(r'^download/', csrf_exempt(views.download_excel), name='download'),
 
     url(r'^ted_mdb/', csrf_exempt(views.ted_mdb), name='ted_mdb.html'),
     url(r'^ted_mdb_rest', csrf_exempt(views.ted_mdb_rest), name='ted_mdb_rest'),
