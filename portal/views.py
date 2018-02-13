@@ -312,6 +312,36 @@ def search_page_rest(request):
         return redirect('upload_annotations.html')
 
     # ON LOAD
+
+    file_array = uploaded_files.objects.all()
+
+    annotations_array = {}
+    file_ids = []
+
+    all_senses = list()
+    all_connectives = {}
+
+    for file in file_array:
+        selected_file_name = file.filename
+        file_ids.append(file.id)
+        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+        senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
+                                                                               'sense2').distinct()
+        sense_array = prepareSenseList(senses)
+        all_senses.extend(sense_array)
+
+        connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
+            'conn', 'conn2',
+            'type').distinct()
+        connective_array = prepareConnList(connectives)
+        all_connectives.update(connective_array)
+
+    all_senses = set(all_senses)
+    all_senses = list(all_senses)
+    all_senses.sort()
+
+    all_connectives = collections.OrderedDict(all_connectives)
+
     first = uploaded_files.objects.filter().first()
     selected_file_name = first.filename
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
@@ -322,15 +352,17 @@ def search_page_rest(request):
         'conn', 'conn2',
         'type').distinct()
     connective_array = prepareConnList(connectives)
-
     request.session['search_results'] = annotations
 
     sense_array = prepareSenseList(senses)
     return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
                                                 'selectedFile': selected_file,
                                                 'selectedFileName': selected_file_name,
-                                                'senses': sense_array,
-                                                'connective_array': connective_array
+                                                'senses': all_senses,
+                                                'connective_array': all_connectives,
+                                                'file_array': file_array,
+                                                'annotations_array': annotations_array,
+                                                'file_ids': file_ids
                                                 })
 
 
@@ -366,6 +398,8 @@ def download(request):
     return response
 ## DOWNLOAD
 '''
+
+
 def download_excel(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=search_results.csv'
@@ -380,7 +414,7 @@ def download_excel(request):
         row = []
         argMap = dict()
         argMap[int(obj.connBeg)] = "%" + obj.conn + "%"
-        argMap[int(obj.connBeg2)] = "%" +obj.conn2 + "%"
+        argMap[int(obj.connBeg2)] = "%" + obj.conn2 + "%"
         argMap[int(obj.arg1Beg)] = "#" + obj.arg1 + "#"
         argMap[int(obj.arg2Beg)] = "*" + obj.arg2 + "*"
         argMap[int(obj.arg1Beg2)] = "#" + obj.arg12 + "#"
@@ -410,6 +444,7 @@ def download_excel(request):
         # Return CSV file to browser as download
     return response
 
+
 def download_pdtb(request):
     response = HttpResponse(content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename=search_results(pdtb).txt'
@@ -418,16 +453,19 @@ def download_pdtb(request):
     for obj in request.session['search_results']:
         line = ""
         if str(obj.type) == types[0] or str(obj.type) == types[3]:
-            line = str(obj.type) + "|" + handleDiscontniousSpan(obj.connBeg, obj.connEnd, obj.connBeg2, obj.connEnd2) + "|Wr|Comm|Null|Null|||" \
-                   + str(obj.sense1) + "|"+ str(obj.sense2) + "|||||" + \
-                   handleDiscontniousSpan(obj.arg1Beg, obj.arg1End, obj.arg1Beg2, obj.arg1End2) +\
-                   "|Inh|Null|Null|Null||" + handleDiscontniousSpan(obj.arg2Beg, obj.arg2End, obj.arg2Beg2, obj.arg2End2) +\
-                   "|Inh|Null|Null|Null||||||||DEFAULT|"+"\n"
+            line = str(obj.type) + "|" + handleDiscontniousSpan(obj.connBeg, obj.connEnd, obj.connBeg2,
+                                                                obj.connEnd2) + "|Wr|Comm|Null|Null|||" \
+                   + str(obj.sense1) + "|" + str(obj.sense2) + "|||||" + \
+                   handleDiscontniousSpan(obj.arg1Beg, obj.arg1End, obj.arg1Beg2, obj.arg1End2) + \
+                   "|Inh|Null|Null|Null||" + handleDiscontniousSpan(obj.arg2Beg, obj.arg2End, obj.arg2Beg2,
+                                                                    obj.arg2End2) + \
+                   "|Inh|Null|Null|Null||||||||DEFAULT|" + "\n"
         elif str(obj.type) == types[1]:
             line = str(obj.type) + "||Wr|Comm|Null|Null||" + obj.conn + "|" \
                    + str(obj.sense1) + "|" + str(obj.sense2) + "|||||" + \
                    handleDiscontniousSpan(obj.arg1Beg, obj.arg1End, obj.arg1Beg2, obj.arg1End2) + \
-                   "|Inh|Null|Null|Null||" + handleDiscontniousSpan(obj.arg2Beg, obj.arg2End, obj.arg2Beg2, obj.arg2End2) + \
+                   "|Inh|Null|Null|Null||" + handleDiscontniousSpan(obj.arg2Beg, obj.arg2End, obj.arg2Beg2,
+                                                                    obj.arg2End2) + \
                    "|Inh|Null|Null|Null||||||||DEFAULT|" + "\n"
         else:
             line = str(obj.type) + "|||||||" + obj.conn + "||||||||" + str(obj.arg1Beg) + ".." + \
@@ -435,11 +473,14 @@ def download_pdtb(request):
                    "||||||||||||DEFAULT|" + "\n"
         response.write(line)
     return response
-def handleDiscontniousSpan(beg1,end1,beg2,end2):
+
+
+def handleDiscontniousSpan(beg1, end1, beg2, end2):
     if str(beg2) == str(-1):
-        return str(beg1) +".."+str(end1)
+        return str(beg1) + ".." + str(end1)
     else:
-        return str(beg1) + ".." + str(end1) + ";"+str(beg2)+".."+str(end2)
+        return str(beg1) + ".." + str(end1) + ";" + str(beg2) + ".." + str(end2)
+
 
 def get_connectives_wrt_language(request):
     if request.method == 'GET' and 'lang' in request.GET:

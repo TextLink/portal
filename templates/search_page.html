@@ -152,6 +152,47 @@
         float: left;
     }
 
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+    }
+
+    /* Style the buttons inside the tab */
+    .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+        background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+        background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+        display: none;
+        border: 1px dotted;
+        position: relative;
+        height: 600px;
+        white-space: pre-wrap;
+        font-size: 16px;
+        overflow-y: scroll;
+        resize: vertical;
+        padding: 10px;
+    }
+
     table {
         font-family: arial, sans-serif;
         border-collapse: collapse;
@@ -212,12 +253,12 @@
 
     <div id="upload_div" class="section">
         <h4 style="float:right">Click here to upload new files </h4>
-<br>
-            <br>
+        <br>
+        <br>
 
         <form action="" method="post">
             {% csrf_token %}
-            <input type="submit" name="upload-button" value="Upload"  style="float:right">
+            <input type="submit" name="upload-button" value="Upload" style="float:right">
         </form>
     </div>
     <br>
@@ -301,21 +342,65 @@
         </tr>
     </table>
 </div>
-<div id="info" class="alert alert-success" style="margin-bottom: 0px"> {{ annotations|length }} relations have been
-    found
-</div>
-<select name='annotationList' id='annotation-select' multiple size='30'>
-    {% for ann in annotations %}
-        <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
-            | {{ ann.sense1 }}
-            | {{ ann.sense2 }}</option>
+
+<div class="tab">
+    {% for file in file_array %}
+        <button class="tablinks" onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
     {% endfor %}
-</select>
-
-
-<div id='txt' name='out' contenteditable='false' align="justify">
-    {{ selectedFile.raw_file.read }}
 </div>
+
+{% for id,annotations in annotations_array.iteritems %}
+    <div id=info_{{ id }} class="alert alert-success" style="margin-bottom: 0px; display:none"> {{ annotations|length }} relations
+        have been
+        found
+    </div>
+{% endfor %}
+
+{% for id,annotations in annotations_array.iteritems %}
+    <select name=annotationList_{{ id }} id=annotation-select_{{ id }} class="anno_content" style="display:none" multiple size='30' >
+        {% for ann in annotations %}
+            <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+                | {{ ann.sense1 }}
+                | {{ ann.sense2 }}</option>
+        {% endfor %}
+    </select>
+{% endfor %}
+
+{% for file in file_array %}
+    <div id={{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
+        {{ file.raw_file.read }}
+    </div>
+{% endfor %}
+
+<script>
+    function openFile(evt, fileId) {
+        var i, tabcontent, tablinks, alert, annotations;
+        tabcontent = document.getElementsByClassName("txt");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        alert = document.getElementsByClassName("alert alert-success");
+        for (i = 0; i < alert.length; i++) {
+            alert[i].style.display = "none";
+        }
+        annotations = document.getElementsByClassName("anno_content");
+        for (i = 0; i < annotations.length; i++) {
+            annotations[i].style.display = "none";
+        }
+        document.getElementById(fileId).style.display = "block";
+        evt.currentTarget.className += " active";
+
+        document.getElementById("info_"+fileId).style.display = "block";
+        evt.currentTarget.className += " active";
+
+        document.getElementById("annotation-select_"+fileId).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
 </body>
 </html>
 
