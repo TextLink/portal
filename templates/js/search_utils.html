@@ -21,39 +21,33 @@
 
     function fileLoad() {
         $.ajax({
-            url: 'http://localhost:8000/upload/search_page?file=' + $("#file-select").val(),
+            url: 'http://localhost:8000/upload/search_page?reset=1',
             type: 'GET',
             crossDomain: true,
             dataType: 'json',
-            success: function (data) {
-                var annotation_data = data['annotation_list']
-                var connective_data = data['connective_list']
-                var content = data["text"];
-                content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $("#txt").html(JSON.stringify(content));
+            success: function (all_data) {
 
-                // fill ANNOTATION SELECT
-                var annotation_select_data = "<select name='annotationList' id='annotation-select' multiple size='30'>";
-                var count = 1;
-                $.each(annotation_data, function (key, value) {
-                    annotation_select_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                    count += 1;
-                });
-                annotation_select_data += '</select>';
-                $('#annotation-select').html(annotation_select_data);
-                $('#info').text(count - 1 + " relations have been found.");
-
-                // fill ANNOTATION SELECT
-
-                // fill CONNECTIVE SELECT
-                var connective_select_data = "<select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'\n";
-                updateChosenSelect(connective_data, connective_select_data, "[name='connectiveList[]");
-                // fill CONNECTIVE SELECT
-
-                // fill SENSE SELECT
-                // ?????
-                // fill SENSE SELECT
-
+                for (var key in all_data) {
+                    var data = all_data[key];
+                    var content = data["text"];
+                    var annotation_list = data["annotation_list"]
+                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                    var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(annotation_list, function (key, value) {
+                        if (key.indexOf("text") < 0) {
+                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                            count += 1;
+                        }
+                    });
+                    annotation_data += '</select>';
+                    var info = '#info_' + key;
+                    $(info).text(count - 1 + " relations have been found.");
+                    var anno = '#annotation-select_' + key;
+                    $(anno).html(annotation_data);
+                    var file = '#raw_' + key;
+                    $(file).html(JSON.stringify(content));
+                }
             },
             error: function () {
                 alert('Failed!');
@@ -111,23 +105,29 @@
             type: 'GET',
             crossDomain: true,
             dataType: 'json',
-            success: function (data) {
-                var content = data["text"];
-                var annotation_list = data["annotation_list"]
-                content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
-                var count = 1;
-                $.each(annotation_list, function (key, value) {
-                    if (key.indexOf("text") < 0) {
-                        annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
-                        count += 1;
-                    }
-                });
-                annotation_data += '</select>';
-                $('#info').text(count - 1 + " relations have been found.");
+            success: function (all_data) {
 
-                $('#annotation-select').html(annotation_data);
-                $("#txt").html(JSON.stringify(content));
+                for (var key in all_data) {
+                    var data = all_data[key];
+                    var content = data["text"];
+                    var annotation_list = data["annotation_list"]
+                    content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                    var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(annotation_list, function (key, value) {
+                        if (key.indexOf("text") < 0) {
+                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                            count += 1;
+                        }
+                    });
+                    annotation_data += '</select>';
+                    var info = '#info_' + key;
+                    $(info).text(count - 1 + " relations have been found.");
+                    var anno = '#annotation-select_' + key;
+                    $(anno).html(annotation_data);
+                    var file = '#raw_' + key;
+                    $(file).html(JSON.stringify(content));
+                }
             },
             error: function () {
                 alert('Failed!');
@@ -167,15 +167,20 @@
     }
 
     function highlight() {
+
+        var id = $('.tab .active').attr("id");
+        var selected_anno_list = "#annotation-select_" + id;
+        var selected_raw = "#raw_" + id;
+
+
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?annotation=" + $("#annotation-select").val(),
+            url: "http://localhost:8000/highlight_rest?annotation=" + $(selected_anno_list).val(),
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
-                $("#txt").html(data);
+                $(selected_raw).html(data);
                 document.getElementById("anno").scrollIntoView();
-
             },
             error: function () {
                 alert('Failed!');
@@ -190,7 +195,11 @@
         $("[name='download-button']").click(download);
         $("[name='download-pdtb-button']").click(download_pdtb);
         $("[name='search-button']").click(senseSearch);
-        $("#annotation-select").click(highlight);
+        $('.tablinks').each(function () {
+            var id = $(this).attr("id");
+            var selected_anno_list = "#annotation-select_" + id;
+            $(selected_anno_list).click(highlight);
+        });
     });
 </script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

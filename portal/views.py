@@ -240,73 +240,76 @@ def search_sense_rest(request):
     if request.method == 'POST':
         return redirect('upload_annotations.html')
 
-    selected_file_name = request.GET['file']
-    selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
-    content = selected_file.raw_file.read()
-    annotation_list = dict()
-    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
-    # SENSE1, !SENSE2
-    if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
-        selected_senses = request.GET['sense'].replace(" ", "")
-        selected_senses = selected_senses.split(',')
-        annotations = annotations.filter(
-            reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses)))
-    # SENSE1, SENSE2
-    if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' in request.GET:
-        selected_senses = request.GET['sense'].replace(" ", "")
-        selected_senses2 = request.GET['sense2'].replace(" ", "")
-        query_operator = request.GET['op']
-        selected_senses = selected_senses.split(',')
-        selected_senses2 = selected_senses2.split(',')
-        annotations = annotations.filter(
-            reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)),
-            reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
-    # CONN
-    if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
-        selected_connectives = request.GET['connective'].replace(" ", "")
-        selected_connectives = selected_connectives.split(',')
-        annotations = annotations.filter(
-            reduce(operator.or_, (Q(conn=c) for c in selected_connectives)))
-    # TYPE
-    if request.method == 'GET' and 'file' in request.GET and "type" in request.GET:
-        selected_types = request.GET['type']
-        selected_types = selected_types.split(',')
-        annotations = annotations.filter(
-            reduce(operator.or_, (Q(type=t) for t in selected_types)))
+    file_array = uploaded_files.objects.all()
+    all_results = {}
 
-    for a in annotations:
-        annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
-    result = dict()
-    result['text'] = content
-    result['annotation_list'] = annotation_list
-    request.session['search_results'] = annotations
-    return HttpResponse(json.dumps(result))
+    for file in file_array:
+        selected_file_name = file.filename
+        content = file.raw_file.read()
+        annotation_list = dict()
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+        # SENSE1, !SENSE2
+        if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
+            selected_senses = request.GET['sense'].replace(" ", "")
+            selected_senses = selected_senses.split(',')
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses)))
+        # SENSE1, SENSE2
+        if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' in request.GET:
+            selected_senses = request.GET['sense'].replace(" ", "")
+            selected_senses2 = request.GET['sense2'].replace(" ", "")
+            query_operator = request.GET['op']
+            selected_senses = selected_senses.split(',')
+            selected_senses2 = selected_senses2.split(',')
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)),
+                reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
+        # CONN
+        if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
+            selected_connectives = request.GET['connective'].replace(" ", "")
+            selected_connectives = selected_connectives.split(',')
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(conn=c) for c in selected_connectives)))
+        # TYPE
+        if request.method == 'GET' and 'file' in request.GET and "type" in request.GET:
+            selected_types = request.GET['type']
+            selected_types = selected_types.split(',')
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(type=t) for t in selected_types)))
+
+        for a in annotations:
+            annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+        result = dict()
+        result['text'] = content
+        result['annotation_list'] = annotation_list
+
+        request.session['search_results'] = annotations
+        all_results[file.id] = result
+
+    return HttpResponse(json.dumps(all_results))
 
 
 # ONLOAD
 def search_page_rest(request):
     documents = uploaded_files.objects.filter()
 
-    if request.method == 'GET' and 'file' in request.GET:
-        selected_file_name = request.GET['file']
-        selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
-        content = selected_file.raw_file.read()
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
-        annotation_list = dict()
-        for a in annotations:
-            annotation_list[a.id] = a.conn + "(" + a.type + ") | " + a.sense1 + "|" + a.sense2
-        connective_list = dict()
-        connectives = pdtbAnnotation.objects.filter(Q(type="Explicit") | Q(type="AltLex"),
-                                                    file=selected_file_name).order_by('conn').distinct()
-        for c in connectives:
-            connective_list[c.conn] = c.conn + "(" + c.type + ")"
+    if request.method == 'GET' and 'reset' in request.GET:
+        file_array = uploaded_files.objects.all()
 
-        result = dict()
-        result['annotation_list'] = annotation_list
-        result['connective_list'] = connective_list
-        result['text'] = content
-        request.session['search_results'] = annotations
-        return HttpResponse(json.dumps(result))
+        all_results = dict()
+
+        for file in file_array:
+            annotation_list = dict()
+            selected_file_name = file.filename
+            annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+            result = dict()
+            result['text'] = file.raw_file.read()
+            for a in annotations:
+                annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+            result['annotation_list'] = annotation_list
+            all_results[file.id] = result
+
+        return HttpResponse(json.dumps(all_results))
 
     if request.method == 'POST':
         return redirect('upload_annotations.html')

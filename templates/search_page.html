@@ -90,7 +90,7 @@
         margin-top: 10px;
     }
 
-    #txt {
+    .txt {
         border: 1px dotted;
         position: relative;
         height: 600px;
@@ -101,7 +101,7 @@
         padding: 10px;
     }
 
-    #annotation-select {
+    .anno_content {
         float: left;
         width: 15vw;
         resize: vertical;
@@ -345,7 +345,7 @@
 
 <div class="tab">
     {% for file in file_array %}
-        <button class="tablinks" onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
+        <button class="tablinks" id="{{ file.id }}" onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
     {% endfor %}
 </div>
 
@@ -367,7 +367,7 @@
 {% endfor %}
 
 {% for file in file_array %}
-    <div id={{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
+    <div id=raw_{{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
         {{ file.raw_file.read }}
     </div>
 {% endfor %}
@@ -391,11 +391,9 @@
         for (i = 0; i < annotations.length; i++) {
             annotations[i].style.display = "none";
         }
-        document.getElementById(fileId).style.display = "block";
-        evt.currentTarget.className += " active";
+        document.getElementById("raw_"+fileId).style.display = "block";
 
         document.getElementById("info_"+fileId).style.display = "block";
-        evt.currentTarget.className += " active";
 
         document.getElementById("annotation-select_"+fileId).style.display = "block";
         evt.currentTarget.className += " active";

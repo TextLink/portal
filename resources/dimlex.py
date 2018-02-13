@@ -3,7 +3,7 @@ import pymysql.cursors
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='keaton',
+                             password='hyp5o8ic',
                              db='portal',
                              port=3306,
                              charset='utf8')
