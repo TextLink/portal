@@ -289,6 +289,127 @@ def search_sense_rest(request):
     return HttpResponse(json.dumps(all_results))
 
 
+def compute_total_stats(request):
+    senses = ['TEMPORAL', 'CONTINGENCY', 'COMPARISON', 'EXPANSION']
+    types = ['Explicit', 'Implicit', 'AltLex', 'EntRel', 'NoRel']
+    stats = {}
+    if request.method == 'GET' and 'type' in request.GET and 'sense' in request.GET and 'base' in request.GET:
+        dis_type = request.GET['type']
+        sense = request.GET['sense']
+        base = request.GET['base']
+
+    if base == 'dis-type':
+        stats['title'] = 'Sense Distribution According to'
+        stats['coloums'] = []
+        stats['coloums'].append(['Senses', 'Counts'])
+        if dis_type == 'ALL':
+            for s in senses:
+                s_count = pdtbAnnotation.objects.filter(
+                    Q(sense1__icontains=s) | Q(sense2__icontains=s)).count()
+
+                stats['coloums'].append([s, s_count])
+
+            stats['title'] = stats['title'] + ' ALL Discourse Types'
+        else:
+            type_ann = pdtbAnnotation.objects.filter(
+                type=dis_type)
+            for s in senses:
+                s_count = type_ann.filter(
+                    Q(sense1__icontains=s) | Q(sense2__icontains=s)).count()
+
+                stats['coloums'].append([s, s_count])
+
+            stats['title'] = stats['title'] + ' ' + dis_type + ' Discourse Type'
+
+    elif base == 'sense':
+        stats['title'] = 'Discourse Type Distribution According to'
+        stats['coloums'] = []
+        stats['coloums'].append(['Discourse Types', 'Counts'])
+        if sense == 'ALL':
+            for t in types:
+                t_count = pdtbAnnotation.objects.filter(type=t).count()
+                stats['coloums'].append([t, t_count])
+
+            stats['title'] = stats['title'] + ' ALL Senses'
+        else:
+            sense_ann = pdtbAnnotation.objects.filter(Q(sense1__icontains=sense) | Q(sense2__icontains=sense))
+            for t in types:
+                t_count = sense_ann.filter(type=t).count()
+                stats['coloums'].append([t, t_count])
+
+            stats['title'] = stats['title'] + ' ' + sense + ' Sense'
+
+    return HttpResponse(json.dumps(stats))
+
+
+def compute_files_stats(request):
+    senses = ['TEMPORAL', 'CONTINGENCY', 'COMPARISON', 'EXPANSION']
+    types = ['Explicit', 'Implicit', 'AltLex', 'EntRel', 'NoRel']
+
+    if request.method == 'GET' and 'type' in request.GET and 'sense' in request.GET and 'base' in request.GET:
+        dis_type = request.GET['type']
+        sense = request.GET['sense']
+        base = request.GET['base']
+
+    file_array = uploaded_files.objects.all()
+
+    annotations_array = {}
+    file_ids = []
+
+    file_stats = {}
+
+    for file in file_array:
+        selected_file_name = file.filename
+        file_ann = pdtbAnnotation.objects.filter(file=selected_file_name)
+
+        stats = {}
+
+        if base == 'dis-type':
+            stats['title'] = 'Sense Distribution According to'
+            stats['coloums'] = []
+            stats['coloums'].append(['Senses', 'Counts'])
+            if dis_type == 'ALL':
+                for s in senses:
+                    s_count = file_ann.filter(
+                        Q(sense1__icontains=s) | Q(sense2__icontains=s)).count()
+
+                    stats['coloums'].append([s, s_count])
+
+                stats['title'] = stats['title'] + ' ALL Discourse Types'
+            else:
+                type_ann = file_ann.filter(
+                    type=dis_type)
+                for s in senses:
+                    s_count = type_ann.filter(
+                        Q(sense1__icontains=s) | Q(sense2__icontains=s)).count()
+
+                    stats['coloums'].append([s, s_count])
+
+                stats['title'] = stats['title'] + ' ' + dis_type + ' Discourse Type'
+
+        elif base == 'sense':
+            stats['title'] = 'Discourse Type Distribution According to'
+            stats['coloums'] = []
+            stats['coloums'].append(['Discourse Types', 'Counts'])
+            if sense == 'ALL':
+                for t in types:
+                    t_count = file_ann.filter(type=t).count()
+                    stats['coloums'].append([t, t_count])
+
+                stats['title'] = stats['title'] + ' ALL Senses'
+            else:
+                sense_ann = file_ann.filter(Q(sense1__icontains=sense) | Q(sense2__icontains=sense))
+                for t in types:
+                    t_count = sense_ann.filter(type=t).count()
+                    stats['coloums'].append([t, t_count])
+
+                stats['title'] = stats['title'] + ' ' + sense + ' Sense'
+
+        file_stats[file.id] = stats
+
+    return HttpResponse(json.dumps(file_stats))
+
+
 # ONLOAD
 def search_page_rest(request):
     documents = uploaded_files.objects.filter()

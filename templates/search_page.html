@@ -99,9 +99,11 @@
         overflow-y: scroll;
         resize: vertical;
         padding: 10px;
+        background-color: white;
     }
 
     .anno_content {
+        border: 1px dotted;
         float: left;
         width: 15vw;
         resize: vertical;
@@ -109,6 +111,8 @@
         height: 600px;
         font-family: 'Times New Roman';
         font-size: 16px;
+        padding: 10px;
+        background-color: white;
     }
 
     #sense-select {
@@ -155,7 +159,7 @@
     .tab {
         overflow: hidden;
         border: 1px solid #ccc;
-        background-color: #f1f1f1;
+        background-color: #f1dc86;
     }
 
     /* Style the buttons inside the tab */
@@ -177,7 +181,7 @@
 
     /* Create an active/current tablink class */
     .tab button.active {
-        background-color: #ccc;
+        background-color: #e3b328;
     }
 
     /* Style the tab content */
@@ -217,6 +221,19 @@
         padding-bottom: 10px;
         background-color: #D2B48C;
     }
+
+    .statsection {
+        float: left;
+        height: 60px;
+        padding: 10px;
+        padding-bottom: 10px;
+        background-color: #D2B48C;
+    }
+
+    .totalsection {
+        overflow: hidden;
+        background-color: #D2B48C;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -234,6 +251,7 @@
     <a href="#contact">Contact</a>
     <a style="float:right" href="/ted_mdb">TED-MDB</a>
 </div>
+<!--
 <button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
 <div id="file_menu" class="collapse">
 
@@ -263,6 +281,7 @@
     </div>
     <br>
 </div>
+-->
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
 <div id="se-demo" class="collapse">
     Select sense for query:
@@ -343,36 +362,154 @@
     </table>
 </div>
 
-<div class="tab">
+<button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
+<div id="file_menu" class="collapse">
+    <!--
+    <div id="file_select" class="section">
+        Selected File:
+        <br>
+        {% csrf_token %}
+        <select id='file-select' name='file-select' method="get">
+            {% for obj in documents %}
+                <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+
+    <div id="upload_div" class="section">
+        <h4 style="float:right">Click here to upload new files </h4>
+        <br>
+        <br>
+
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" name="upload-button" value="Upload" style="float:right">
+        </form>
+    </div>
+    <br>
+-->
+    <div class="tab">
+        {% for file in file_array %}
+            <button class="tablinks" id="{{ file.id }}"
+                    onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
+        {% endfor %}
+    </div>
+
+    {% for id,annotations in annotations_array.iteritems %}
+        <div id=info_{{ id }} class="alert alert-success"
+             style="margin-bottom: 0px; display:none"> {{ annotations|length }} relations
+            have been
+            found
+        </div>
+    {% endfor %}
+
+    {% for id,annotations in annotations_array.iteritems %}
+        <select name=annotationList_{{ id }} id=annotation-select_{{ id }} class="anno_content" style="display:none"
+                multiple size='30'>
+            {% for ann in annotations %}
+                <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+                    | {{ ann.sense1 }}
+                    | {{ ann.sense2 }}</option>
+            {% endfor %}
+        </select>
+    {% endfor %}
+
     {% for file in file_array %}
-        <button class="tablinks" id="{{ file.id }}" onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
+        <div id=raw_{{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
+            {{ file.raw_file.read }}
+        </div>
     {% endfor %}
 </div>
-
-{% for id,annotations in annotations_array.iteritems %}
-    <div id=info_{{ id }} class="alert alert-success" style="margin-bottom: 0px; display:none"> {{ annotations|length }} relations
-        have been
-        found
+<button type="button" class="accordion" data-toggle="collapse" data-target="#statistics">File Statistics</button>
+<div id="statistics" class="collapse">
+    <div class="totalsection">
+        <div id="type_select" class="statsection">
+            Selected Type:
+            <br>
+            <select id='file-type-select' name='type-select'>
+                <option value="ALL" selected>ALL</option>
+                <option value="Explicit">Explicit</option>
+                <option value="Implicit">Implicit</option>
+                <option value="AltLex">AltLex</option>
+                <option value="EntRel">EntRel</option>
+                <option value="NoRel">EntRel</option>
+            </select>
+        </div>
+        <div id="sense_select" class="statsection">
+            Selected Sense:
+            <br>
+            <select id='file-sense-select' name='sense-select' method="get">
+                <option value="ALL" selected>ALL</option>
+                <option value="TEMPORAL">TEMPORAL</option>
+                <option value="CONTINGENCY">CONTINGENCY</option>
+                <option value="COMPARISON">COMPARISON</option>
+                <option value="EXPANSION">EXPANSION</option>
+            </select>
+        </div>
+        <div id="base_select" class="statsection">
+            According to:
+            <br>
+            <select id='file-base-select' name='base-select' method="get">
+                <option value="dis-type" selected>DISCOURSE-TYPE</option>
+                <option value="sense">SENSE</option>
+            </select>
+        </div>
+        <br>
+        <button class="button" name="compute-files-stats" style="float: right;">Compute Statistics</button>
     </div>
-{% endfor %}
-
-{% for id,annotations in annotations_array.iteritems %}
-    <select name=annotationList_{{ id }} id=annotation-select_{{ id }} class="anno_content" style="display:none" multiple size='30' >
-        {% for ann in annotations %}
-            <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
-                | {{ ann.sense1 }}
-                | {{ ann.sense2 }}</option>
+    <div class="tab">
+        {% for file in file_array %}
+            <button class="statlinks" id="{{ file.id }}"
+                    onclick="openFileStatistics(event, {{ file.id }})">{{ file.filename }}</button>
         {% endfor %}
-    </select>
-{% endfor %}
-
-{% for file in file_array %}
-    <div id=raw_{{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
-        {{ file.raw_file.read }}
     </div>
-{% endfor %}
+    {% for file in file_array %}
+        <div id=filechart_{{ file.id }} class="filestats" style="width: 900px; height: 500px; display:none"></div>
+    {% endfor %}
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#totalstatistics">Total Statistics</button>
+<div id="totalstatistics" class="collapse">
+    <div class="totalsection">
+        <div id="type_select" class="statsection">
+            Selected Type:
+            <br>
+            <select id='total-type-select' name='type-select' method="get">
+                <option value="ALL" selected>ALL</option>
+                <option value="Explicit">Explicit</option>
+                <option value="Implicit">Implicit</option>
+                <option value="AltLex">AltLex</option>
+                <option value="EntRel">EntRel</option>
+            </select>
+        </div>
+        <div id="sense_select" class="statsection">
+            Selected Sense:
+            <br>
+            <select id='total-sense-select' name='sense-select' method="get">
+                <option value="ALL" selected>ALL</option>
+                <option value="TEMPORAL">TEMPORAL</option>
+                <option value="CONTINGENCY">CONTINGENCY</option>
+                <option value="COMPARISON">COMPARISON</option>
+                <option value="EXPANSION">EXPANSION</option>
+            </select>
+        </div>
+        <div id="base_select" class="statsection">
+            According to:
+            <br>
+            <select id='total-base-select' name='base-select' method="get">
+                <option value="dis-type" selected>DISCOURSE-TYPE</option>
+                <option value="sense">SENSE</option>
+            </select>
+        </div>
+        <br>
+        <button class="button" name="compute-total-stats" style="float: right;">Compute Statistics</button>
+    </div>
+    <div id=totalchart class="totalstats" style="width: 900px; height: 500px;"></div>
+</div>
+<script type="text/javascript">
 
-<script>
     function openFile(evt, fileId) {
         var i, tabcontent, tablinks, alert, annotations;
         tabcontent = document.getElementsByClassName("txt");
@@ -391,13 +528,14 @@
         for (i = 0; i < annotations.length; i++) {
             annotations[i].style.display = "none";
         }
-        document.getElementById("raw_"+fileId).style.display = "block";
+        document.getElementById("raw_" + fileId).style.display = "block";
 
-        document.getElementById("info_"+fileId).style.display = "block";
+        document.getElementById("info_" + fileId).style.display = "block";
 
-        document.getElementById("annotation-select_"+fileId).style.display = "block";
+        document.getElementById("annotation-select_" + fileId).style.display = "block";
         evt.currentTarget.className += " active";
     }
+
 </script>
 </body>
 </html>

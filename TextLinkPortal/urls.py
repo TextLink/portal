@@ -39,6 +39,9 @@ urlpatterns = [
     url(r'^upload/search_page/', csrf_exempt(views.search_page_rest), name='search_page.html'),
     url(r'^upload/search_sense_rest', csrf_exempt(views.search_sense_rest), name='search_sense_rest'),
 
+    url(r'^upload/compute_total_stats', csrf_exempt(views.compute_total_stats), name='compute_total_stats'),
+    url(r'^upload/compute_files_stats', csrf_exempt(views.compute_files_stats), name='compute_files_stats'),
+
     url(r'^highlight_rest', csrf_exempt(views.highlight_rest), name='highlight_rest'),
     url(r'^download/', csrf_exempt(views.download_excel), name='download'),
     url(r'^download_pdtb/', csrf_exempt(views.download_pdtb), name='download'),

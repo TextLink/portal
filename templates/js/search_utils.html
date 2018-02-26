@@ -6,9 +6,13 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
 <script>
 
+    google.charts.load("current", {packages: ["corechart"]});
+
+    //google.charts.setOnLoadCallback(drawTotalChart);
 
     function updateChosenSelect(data, select_html, select_name) {
         $.each(data, function (key, value) {
@@ -188,6 +192,101 @@
         });
     }
 
+    function compute_total_stats() {
+        $.ajax({
+            url: "http://localhost:8000/upload/compute_total_stats?type=" + $("#total-type-select").val() +
+            "&sense=" + $("#total-sense-select").val() +
+            "&base=" + $("#total-base-select").val(),
+            type: 'GET',
+            crossDomain: true,
+            dataType: 'json',
+            success: function (data) {
+                var title = data["title"];
+                var coloums = data["coloums"];
+                drawTotalChart(title, coloums, "totalchart");
+            },
+            error: function () {
+                alert('Failed!');
+            },
+        });
+    }
+
+    var global_files_stats = null;
+
+    function compute_files_stats() {
+        $.ajax({
+            url: "http://localhost:8000/upload/compute_files_stats?type=" + $("#file-type-select").val() +
+            "&sense=" + $("#file-sense-select").val() +
+            "&base=" + $("#file-base-select").val(),
+            type: 'GET',
+            crossDomain: true,
+            dataType: 'json',
+            success: function (data) {
+
+                global_files_stats = data;
+
+                $('.statlinks').each(function () {
+                    var id = $(this).attr("id");
+                    var filechart_id = "filechart_" + id;
+
+                    var file_data = global_files_stats[id];
+                    var title = file_data["title"];
+                    var coloums = file_data["coloums"];
+
+                    drawTotalChart(title, coloums, filechart_id);
+                });
+
+            },
+            error: function () {
+                alert('Failed!');
+            },
+        });
+    }
+
+    function openFileStatistics(evt, fileId) {
+        var i, stats, statlinks, alert, annotations;
+        stats = document.getElementsByClassName("stats");
+        for (i = 0; i < stats.length; i++) {
+            stats[i].style.display = "none";
+        }
+        statlinks = document.getElementsByClassName("statlinks");
+        for (i = 0; i < statlinks.length; i++) {
+            statlinks[i].className = statlinks[i].className.replace(" active", "");
+        }
+        alert = document.getElementsByClassName("filestats");
+        for (i = 0; i < alert.length; i++) {
+            alert[i].style.display = "none";
+        }
+        document.getElementById("filechart_" + fileId).style.display = "block";
+
+        evt.currentTarget.className += " active";
+
+        compute_files_stats();
+
+        $('.statlinks').each(function () {
+            var id = $(this).attr("id");
+            var filechart_id = "filechart_" + id;
+
+            var file_data = global_files_stats[id];
+            var title = file_data["title"];
+            var coloums = file_data["coloums"];
+
+            drawTotalChart(title, coloums, filechart_id);
+        });
+    }
+
+    function drawTotalChart(title, coloums, attr_id) {
+        var data = google.visualization.arrayToDataTable(coloums);
+
+        var options = {
+            title: title,
+            pieHole: 0.4,
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById(attr_id));
+        chart.draw(data, options);
+    }
+
     $(document).ready(function () {
 
         $("#file-select").change(fileLoad);
@@ -195,6 +294,8 @@
         $("[name='download-button']").click(download);
         $("[name='download-pdtb-button']").click(download_pdtb);
         $("[name='search-button']").click(senseSearch);
+        $("[name='compute-total-stats']").click(compute_total_stats);
+        $("[name='compute-files-stats']").click(compute_files_stats);
         $('.tablinks').each(function () {
             var id = $(this).attr("id");
             var selected_anno_list = "#annotation-select_" + id;
