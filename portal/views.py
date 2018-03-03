@@ -28,14 +28,26 @@ def upload_annotations(request):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            data = request.FILES['ann_file'].read()
-            contents = smart_unicode(request.FILES['raw_file'].read())
-            language = request.POST['language']
-            populate_ann_db(request.FILES['ann_file'].name, data, contents, language, request.session['user_id'])
-            file_object = form.save(commit=False)
-            file_object.filename = request.FILES['ann_file'].name
-            file_object.user_id = request.session['user_id']
-            file_object.save()
+            ann_tool = request.POST['annotation_tool']
+            if ann_tool == 'pdtb_annotator':
+                data = request.FILES['ann_file'].read()
+                contents = smart_unicode(request.FILES['raw_file'].read())
+                language = request.POST['language']
+                file_name = request.FILES['ann_file'].name
+                populate_ann_db(file_name, data, contents, language, request.session['user_id'])
+                file_object = form.save(commit=False)
+                file_object.filename = file_name
+                file_object.user_id = request.session['user_id']
+                file_object.save()
+            elif ann_tool == 'datt':
+                xml_file = request.FILES['ann_file']
+                language = request.POST['language']
+                file_name = request.FILES['ann_file'].name
+                populate_ann_db_xml(file_name, xml_file, language, request.session['user_id'])
+                file_object = form.save(commit=False)
+                file_object.filename = request.FILES['ann_file'].name
+                file_object.user_id = request.session['user_id']
+                file_object.save()
         return redirect('search_page.html')
     else:
         form = DocumentForm()
@@ -55,9 +67,19 @@ def highlight_rest(request):
                                                                                         'file')[0]
         #    text = smart_unicode(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read()).replace(
         #        "\n", "")
-        with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
-                         encoding='utf8') as f:
-            text = f.read().replace("\n", "")
+
+        lang = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('language')[0]
+
+        if lang['language'] == 'Turkish':
+            with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
+                             encoding='utf8') as f:
+                text = f.read().replace("\n", " ")
+        else:
+            with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
+                             encoding='utf8') as f:
+                text = f.read().replace("\n", "")
+
+
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \

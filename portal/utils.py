@@ -1,7 +1,8 @@
 import collections
 
 from portal.models import *
-
+import xml.dom.minidom as minidom
+from django.utils.encoding import smart_unicode
 
 def add_highlight_html(text, tag, index):
     if "arg1" in tag:
@@ -114,6 +115,58 @@ def populate_ann_db(file, data, contents, language, user_id):
                            file=file, type=type, language=language,
                            user_id=user_id
                            ).save()
+
+
+def populate_ann_db_xml(file_name, xml_file, language, user_id):
+    doc = minidom.parse(xml_file)
+    relations = doc.getElementsByTagName("Relation")
+
+    for relation in relations:
+        type = relation.getAttribute("type")
+        sense = relation.getAttribute("sense")
+        sense2 = relation.getAttribute("sense2") if relation.hasAttribute("sense2") else -1
+
+        conn = [-1, -1]
+        connBeg = [-1, -1]
+        connEnd = [-1, -1]
+        connectives = relation.getElementsByTagName("Conn")[0].getElementsByTagName("Span")
+        for i in range(len(connectives)):
+            conn[i] = smart_unicode(connectives[i].getElementsByTagName("Text")[0].firstChild.data)
+            connBeg[i] = connectives[i].getElementsByTagName("BeginOffset")[0].firstChild.data
+            connEnd[i] = connectives[i].getElementsByTagName("EndOffset")[0].firstChild.data
+
+        arg1 = [-1, -1]
+        arg1Beg = [-1, -1]
+        arg1End = [-1, -1]
+        argument1 = relation.getElementsByTagName("Arg1")[0].getElementsByTagName("Span")
+        for i in range(len(argument1)):
+            a = smart_unicode(argument1[i].getElementsByTagName("Text")[0].firstChild.data)
+            arg1[i] = a.replace("\n                    ", " ")
+            arg1Beg[i] = argument1[i].getElementsByTagName("BeginOffset")[0].firstChild.data
+            arg1End[i] = argument1[i].getElementsByTagName("EndOffset")[0].firstChild.data
+
+        arg2 = [-1, -1]
+        arg2Beg = [-1, -1]
+        arg2End = [-1, -1]
+        argument2 = relation.getElementsByTagName("Arg2")[0].getElementsByTagName("Span")
+        for i in range(len(argument2)):
+            a = smart_unicode(argument2[i].getElementsByTagName("Text")[0].firstChild.data)
+            arg2[i] = a.replace("\n                    ", " ")
+            arg2Beg[i] = argument2[i].getElementsByTagName("BeginOffset")[0].firstChild.data
+            arg2End[i] = argument2[i].getElementsByTagName("EndOffset")[0].firstChild.data
+
+
+
+        pdtbAnnotation(conn=conn[0], connBeg=connBeg[0], connEnd=connEnd[0],
+                       conn2=conn[1], connBeg2=connBeg[1], connEnd2=connEnd[1],
+                       arg1=arg1[0], arg1Beg=arg1Beg[0], arg1End=arg1End[0],
+                       arg12=arg1[1], arg1Beg2=arg1Beg[1], arg1End2=arg1End[1],
+                       arg2=arg2[0], arg2Beg=arg2Beg[0], arg2End=arg2End[0],
+                       arg22=arg2[1], arg2Beg2=arg2Beg[1], arg2End2=arg2End[1],
+                       sense1=sense, sense2=sense2,
+                       file=file_name, type=type, language=language,
+                       user_id=user_id
+                       ).save()
 
 
 def recover_arg(index, contents):
