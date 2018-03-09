@@ -4,6 +4,7 @@ from portal.models import *
 import xml.dom.minidom as minidom
 from django.utils.encoding import smart_unicode
 
+
 def add_highlight_html(text, tag, index):
     if "arg1" in tag:
         tag = "arg1'" + "id='anno"
@@ -124,9 +125,12 @@ def populate_ann_db_xml(file_name, xml_file, language, user_id):
     for relation in relations:
         type = relation.getAttribute("type")
         sense = relation.getAttribute("sense")
-        sense2 = relation.getAttribute("sense2") if relation.hasAttribute("sense2") else -1
+        sense2 = relation.getAttribute("sense2") if relation.hasAttribute("sense2") else ""
 
-        conn = [-1, -1]
+        sense = sense.replace(': ', '.')
+        sense2 = sense2.replace(': ', '.')
+
+        conn = ['none', 'none']
         connBeg = [-1, -1]
         connEnd = [-1, -1]
         connectives = relation.getElementsByTagName("Conn")[0].getElementsByTagName("Span")
@@ -135,7 +139,7 @@ def populate_ann_db_xml(file_name, xml_file, language, user_id):
             connBeg[i] = connectives[i].getElementsByTagName("BeginOffset")[0].firstChild.data
             connEnd[i] = connectives[i].getElementsByTagName("EndOffset")[0].firstChild.data
 
-        arg1 = [-1, -1]
+        arg1 = ['none', 'none']
         arg1Beg = [-1, -1]
         arg1End = [-1, -1]
         argument1 = relation.getElementsByTagName("Arg1")[0].getElementsByTagName("Span")
@@ -145,7 +149,7 @@ def populate_ann_db_xml(file_name, xml_file, language, user_id):
             arg1Beg[i] = argument1[i].getElementsByTagName("BeginOffset")[0].firstChild.data
             arg1End[i] = argument1[i].getElementsByTagName("EndOffset")[0].firstChild.data
 
-        arg2 = [-1, -1]
+        arg2 = ['none', 'none']
         arg2Beg = [-1, -1]
         arg2End = [-1, -1]
         argument2 = relation.getElementsByTagName("Arg2")[0].getElementsByTagName("Span")
@@ -154,8 +158,6 @@ def populate_ann_db_xml(file_name, xml_file, language, user_id):
             arg2[i] = a.replace("\n                    ", " ")
             arg2Beg[i] = argument2[i].getElementsByTagName("BeginOffset")[0].firstChild.data
             arg2End[i] = argument2[i].getElementsByTagName("EndOffset")[0].firstChild.data
-
-
 
         pdtbAnnotation(conn=conn[0], connBeg=connBeg[0], connEnd=connEnd[0],
                        conn2=conn[1], connBeg2=connBeg[1], connEnd2=connEnd[1],
@@ -211,18 +213,18 @@ def prepareSenseList(senses):
 
 
 def getSensesAllLevel(slist):
-    sense_array = [slist[0]]
+    sense_array = [slist[0].lower()]
     if (len(slist) > 1):
-        sense_array.append(slist[0] + "." + slist[1])
+        sense_array.append(slist[0].lower() + "." + slist[1].lower())
     if (len(slist) > 2):
-        sense_array.append(slist[0] + "." + slist[1] + "." + slist[2])
+        sense_array.append(slist[0].lower() + "." + slist[1].lower() + "." + slist[2].lower())
     return sense_array
 
 
 def prepareConnList(connectives):
     conn_array = dict()
     for c in connectives:
-        if (c['type'] != 'Explicit') and (c['type'] != 'AltLex'):
+        if (c['type'].lower() != 'Explicit'.lower()) and (c['type'].lower() != 'AltLex'.lower()):
             continue
         elif c['conn2'].lower() != 'none':
             conn_array[c['conn'] + " " + c['conn2']] = " (" + c['type'] + ")"
