@@ -79,8 +79,6 @@ def highlight_rest(request):
                              encoding='utf8') as f:
                 text = f.read().replace("\n", "")
 
-
-
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \
             ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation']).values('connBeg', 'connEnd',
@@ -265,6 +263,8 @@ def search_sense_rest(request):
     file_array = uploaded_files.objects.all()
     all_results = {}
 
+    annotations_dict = {}
+
     for file in file_array:
         selected_file_name = file.filename
         content = file.raw_file.read()
@@ -305,8 +305,10 @@ def search_sense_rest(request):
         result['text'] = content
         result['annotation_list'] = annotation_list
 
-        request.session['search_results'] = annotations
+        annotations_dict[selected_file_name] = annotations
         all_results[file.id] = result
+
+    request.session['search_results'] = annotations_dict
 
     return HttpResponse(json.dumps(all_results))
 
@@ -462,6 +464,7 @@ def search_page_rest(request):
     file_array = uploaded_files.objects.all()
 
     annotations_array = {}
+    annotations_dict = {}
     file_ids = []
 
     all_senses = list()
@@ -471,6 +474,7 @@ def search_page_rest(request):
         selected_file_name = file.filename
         file_ids.append(file.id)
         annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+        annotations_dict[selected_file_name] = annotations_array[file.id]
         senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
                                                                                'sense2').distinct()
         sense_array = prepareSenseList(senses)
@@ -488,6 +492,8 @@ def search_page_rest(request):
 
     all_connectives = collections.OrderedDict(all_connectives)
 
+    request.session['search_results'] = annotations_dict
+
     first = uploaded_files.objects.filter().first()
     selected_file_name = first.filename
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
@@ -498,7 +504,6 @@ def search_page_rest(request):
         'conn', 'conn2',
         'type').distinct()
     connective_array = prepareConnList(connectives)
-    request.session['search_results'] = annotations
 
     sense_array = prepareSenseList(senses)
     return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
@@ -547,8 +552,11 @@ def download(request):
 
 
 def download_excel(request):
+
+    filename = request.GET['filename']
+
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=search_results.csv'
+    response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
     writer = csv.writer(response)
     # name = pdtbAnnotation._name_
     # Write headers to CSV file
@@ -556,7 +564,7 @@ def download_excel(request):
 
     writer.writerow(headers)
     # Write data to CSV file
-    for obj in request.session['search_results']:
+    for obj in request.session['search_results'][filename]:
         row = []
         argMap = dict()
         argMap[int(obj.connBeg)] = "%" + obj.conn + "%"
@@ -588,6 +596,52 @@ def download_excel(request):
 
         writer.writerow(row)
         # Return CSV file to browser as download
+    return response
+
+
+def download_all(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=all_files.csv'
+    writer = csv.writer(response)
+    # name = pdtbAnnotation._name_
+    # Write headers to CSV file
+    headers = ["Type", "Sense", "2nd Sense", "Annotation(raw)"]
+
+    writer.writerow(headers)
+    # Write data to CSV file
+    for key in request.session['search_results']:
+        for obj in request.session['search_results'][key]:
+            row = []
+            argMap = dict()
+            argMap[int(obj.connBeg)] = "%" + obj.conn + "%"
+            argMap[int(obj.connBeg2)] = "%" + obj.conn2 + "%"
+            argMap[int(obj.arg1Beg)] = "#" + obj.arg1 + "#"
+            argMap[int(obj.arg2Beg)] = "*" + obj.arg2 + "*"
+            argMap[int(obj.arg1Beg2)] = "#" + obj.arg12 + "#"
+            argMap[int(obj.arg2Beg2)] = "*" + obj.arg22 + "*"
+
+            orderedArgMap = collections.OrderedDict(sorted(argMap.items()))
+            orderedArgMap.pop(-1, None)
+            annotation = ""
+            for a in orderedArgMap:
+                annotation = annotation + " " + orderedArgMap[a]
+            print annotation
+            val = getattr(obj, "type")
+            if callable(val):
+                val = val()
+            row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+            val = getattr(obj, "sense1")
+            if callable(val):
+                val = val()
+            row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+            val = getattr(obj, "sense2")
+            if callable(val):
+                val = val()
+            row.append(val.encode('UTF-8') if isinstance(val, basestring) else val)
+            row.append(annotation.encode('UTF-8') if isinstance(annotation, basestring) else annotation)
+
+            writer.writerow(row)
+            # Return CSV file to browser as download
     return response
 
 

@@ -43,8 +43,9 @@ urlpatterns = [
     url(r'^upload/compute_files_stats', csrf_exempt(views.compute_files_stats), name='compute_files_stats'),
 
     url(r'^highlight_rest', csrf_exempt(views.highlight_rest), name='highlight_rest'),
-    url(r'^download/', csrf_exempt(views.download_excel), name='download'),
-    url(r'^download_pdtb/', csrf_exempt(views.download_pdtb), name='download'),
+    url(r'^download_excel', csrf_exempt(views.download_excel), name='download_excel'),
+    url(r'^download_pdtb', csrf_exempt(views.download_pdtb), name='download_pdtb'),
+    url(r'^download_all', csrf_exempt(views.download_all), name='download_all'),
     url(r'^ted_mdb/', csrf_exempt(views.ted_mdb), name='ted_mdb.html'),
     url(r'^ted_mdb_rest', csrf_exempt(views.ted_mdb_rest), name='ted_mdb_rest'),
     url(r'^ted_mdb_get_aligned', csrf_exempt(views.ted_mdb_get_aligned), name='ted_mdb_get_aligned'),

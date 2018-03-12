@@ -74,11 +74,25 @@
     }
 
     function download() {
-        location.replace('http://localhost:8000/download');
+        var filename = $("#download-file-select").val();
+        if (filename == null) {
+            alert('Please select a file');
+        } else {
+            location.replace('http://localhost:8000/download_excel?filename=' + filename);
+        }
     }
 
     function download_pdtb() {
-        location.replace('http://localhost:8000/download_pdtb');
+        var filename = $("#download-file-select").val();
+        if (filename == null) {
+            alert('Please select a file');
+        } else {
+            location.replace('http://localhost:8000/download_pdtb?filename=' + filename);
+        }
+    }
+
+    function download_all() {
+        location.replace('http://localhost:8000/download_all');
     }
 
     function senseSearch() {
@@ -293,6 +307,7 @@
         $("[name='reset']").click(reset);
         $("[name='download-button']").click(download);
         $("[name='download-pdtb-button']").click(download_pdtb);
+        $("[name='download-all-button']").click(download_all);
         $("[name='search-button']").click(senseSearch);
         $("[name='compute-total-stats']").click(compute_total_stats);
         $("[name='compute-files-stats']").click(compute_files_stats);

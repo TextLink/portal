@@ -345,8 +345,21 @@
     </form>
     <button class="button" name="search-button">Search</button>
     <button name="reset">Reset</button>
+    <br>
+    <br>
+    Select file to download:
+    <br>
+    <select name='downloadFileList[]' id='download-file-select' data-placeholder='File'
+            tabindex='11'>
+        {% for file in file_array %}
+            <option value="{{ file.filename }} "> {{ file.filename }} </option>
+        {% endfor %}
+    </select>
+    <br>
+    <br>
     <button class="button" name="download-button">Download (Excel)</button>
     <button class="button" name="download-pdtb-button">Download (Pdtb)</button>
+    <button class="button" name="download-all-button">Download All Files (Excel)</button>
     <br>
     <br>
 </div>
