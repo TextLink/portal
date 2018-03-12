@@ -552,7 +552,6 @@ def download(request):
 
 
 def download_excel(request):
-
     filename = request.GET['filename']
 
     response = HttpResponse(content_type='text/csv')
@@ -694,18 +693,21 @@ def get_connectives_wrt_language(request):
 
 
 def get_senses_wrt_connective(request):
-    if request.method == 'GET' and 'connective' in request.GET and 'lang' in request.GET:
+    if request.method == 'GET' and 'connective' in request.GET:
         conn = request.GET['connective']
         conn = conn.split(",")
-        lang = request.GET['lang']
-        selected_connective = Dimlex.objects.filter(
-            reduce(operator.or_, (Q(connective=c) for c in conn)), lang=lang
-        )
-        pdtb3_relations = []
+        selected_connective = Dimlex.objects.filter(connective__in=conn)
+        pdtb3_relations = {}
+        c = 0
         for i in selected_connective:
-            a = {"word": i.connective, "relation": i.metadata['syn'][0]['sem']}
-            pdtb3_relations.append(a)
-        # pdtb3_relations = selected_connective.metadata['syn'][0]['sem']
+            word = []
+            pdtb3_relations[i.connective] = word
+            for s in i.metadata['syn']:
+                #a = {"word": i.connective, "category": i.metadata['syn'][s]['cat'], "relation": i.metadata['syn'][s]['sem']}
+                pdtb3_relations[i.connective].append(s)
+            # pdtb3_relations = selected_connective.metadata['syn'][0]['sem']
+            c = c + 1
+        #return HttpResponse(json.dumps(pdtb3_relations))
         return HttpResponse(json.dumps(pdtb3_relations))
 
 

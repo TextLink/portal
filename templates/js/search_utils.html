@@ -71,6 +71,7 @@
         $("input:checkbox[name=discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });
+        $("#dimlex_div").html(null);
     }
 
     function download() {
@@ -154,11 +155,12 @@
         // DIMLEX AJAX REQUEST
         if (ajax_url.indexOf(('conn')) > 0) {
             $.ajax({
-                url: "http://localhost:8000/get_sense_wrt_connective?connective=" + $("#conn-select").val() + "&lang=English",
+                url: "http://localhost:8000/get_sense_wrt_connective?connective=" + $("#conn-select").val(),
                 type: 'GET',
                 crossDomain: true,
                 dataType: 'json',
                 success: function (data) {
+                    /*
                     var dimlex_info = "<ul>"
                     $.each(data, function (index, elem) {
                         dimlex_info += '<table>  <tr> <th>Connective: ' + $("#conn-select").val() + '</th>  </tr> ';
@@ -169,9 +171,44 @@
                     });
                     dimlex_info += '</table>';
                     $("#dimlex_div").html(dimlex_info);
+                    */
+                    // document.getElementById("json").innerHTML = JSON.stringify(data, undefined, 2);
+                    var rel_type = "";
+                    var dimlex_info = "";
+                    for (var key in data) {
+                        dimlex_info += "<div class='dimlex1'>";
+                        dimlex_info += "<br>";
+                        dimlex_info += "<font color='red'>word</font>: <b>" + key + "</b>";
+                        dimlex_info += "<br>";
+                        dimlex_info += "<div class='dimlex2'>";
+                        for (var i in data[key]) {
+                            dimlex_info += "<i><font color='red'>category</font>: <b>" + data[key][i]['cat']['t'] + "</b></i>";
+                            dimlex_info += "<br>";
+                            dimlex_info += "<div class='dimlex3'>";
+                            for (var s in data[key][i]['sem']) {
+
+                                if (data[key][i]['sem'][s].hasOwnProperty('pdtb2_relation')) {
+                                    rel_type = "pdtb2_relation";
+                                } else {
+                                    rel_type = "pdtb3_relation";
+                                }
+
+                                dimlex_info += "<p style='margin-bottom:2px;'>\n" +
+                                    data[key][i]['sem'][s][rel_type][0]['sense'] +
+                                    ' (' + data[key][i]['sem'][s][rel_type][0]['freq'] + '/' +
+                                    data[key][i]['sem'][s][rel_type][0]['anno_N'] + ')' +
+                                    "</p>";
+                            }
+                            dimlex_info += "</div>";
+                        }
+                        dimlex_info += "</div>";
+                        dimlex_info += "</div>";
+                    }
+                    $("#dimlex_div").html(dimlex_info);
                 },
                 error: function () {
-                    alert('Failed!');
+                    $("#dimlex_div").html(null);
+                    alert('No information found in Dimlex for ' + $("#conn-select").val());
                 },
             });
             $('html, body').animate({
