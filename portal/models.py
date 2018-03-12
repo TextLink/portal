@@ -5,7 +5,7 @@ from django_mysql.models import JSONField
 
 
 class uploaded_files(models.Model):
-    filename = models.CharField(max_length=500, default="")
+    filename = models.CharField(max_length=255, unique=True)
     ann_file = models.FileField(upload_to='forms/')
     raw_file = models.FileField(upload_to='forms/')
     uploaded_at = models.DateTimeField(auto_now_add=True)

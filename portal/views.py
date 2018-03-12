@@ -30,10 +30,12 @@ def upload_annotations(request):
                 contents = smart_unicode(request.FILES['raw_file'].read())
                 # language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
+                pdtbAnnotation.objects.filter(file=file_name).delete() #if same file is updated again
                 populate_ann_db(file_name, data, contents, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
                 file_object.filename = file_name
                 file_object.user_id = request.session['user_id']
+                uploaded_files.objects.filter(filename=file_name).delete() #if same file is updated again
                 file_object.save()
             elif ann_tool == 'datt':
                 xml_file = request.FILES['ann_file']
@@ -288,10 +290,16 @@ def search_sense_rest(request):
                     reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)) )
                 annotations = tmp1 | tmp2
             else:
-                annotations = annotations.filter(
+                tmp1 = annotations.filter(
                     reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)))
-                annotations = annotations.exclude(
+                tmp1 = tmp1.exclude(
                     reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
+                tmp2 = annotations.filter(
+                    reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)))
+                tmp2 = tmp2.exclude(
+                    reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)))
+                annotations = tmp1 | tmp2
+
         # CONN
         if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
             selected_connectives = request.GET['connective'].replace(" ", "")
