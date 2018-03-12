@@ -1,29 +1,141 @@
 <style type="text/css">
 
+    .fixed-navbar {
+        overflow: hidden;
+        background-color: #8B4513;
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+
+    .fixed-navbar2 {
+        overflow: hidden;
+        background-color: #e3b328;
+        position: relative;
+        top: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .fixed-navbar a {
+        float: left;
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+    }
+
+    .main1 {
+        background: white;
+        font: 18px arial, sans-serif;
+        padding: 50px 50px;
+    }
+
+    .main2 {
+        background: floralwhite;
+        font: 14px arial, sans-serif;
+        text-align: left;
+        padding: 60px 60px;
+    }
+
+    .main3 {
+        background: floralwhite;
+        text-align: center;
+        padding: 60px 60px;
+    }
+
 </style>
+<!DOCTYPE html>
+<html lang="en">
 
-    <title>Upload Annotations</title>
+{% include 'js/search_utils.html' %}
 
+<head>
+    <title>Home</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 
-{% block content %}
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_ul }}
-        <input type="radio" name="language" value="English"> English
-        <input type="radio" name="language" value="German"> German
-        <input type="radio" name="language" value="Turkish"> Turkish
-        <br>
-        <input type="radio" name="annotation_tool" value="pdtb_annotator"> PDTB Annotator
-        <input type="radio" name="annotation_tool" value="datt"> DATT
-        <br>
+<div class="fixed-navbar2">
+    <h2>TextLink Web Portal</h2>
+</div>
 
-        <button type="submit">Upload File(s)</button>
+<div class="fixed-navbar">
+    <a href="/upload_annotations">Home</a>
+    <a href="#usage">Usage</a>
+    <a href="#contact">Contact</a>
+    <a style="float:right" href="/ted_mdb">TED-MDB</a>
+    <a style="float:right" href="/upload/search_page">File Browser</a>
+</div>
 
-    </form>
+<div class="main1">
 
-    <form action="">
+    TextLink will unify numerous but scattered linguistic resources on discourse structure. Effective discourse in
+    any language is characterized by clear relations between sentences and coherent structure. But languages vary in
+    how relations and structure are signalled. While monolingual dictionaries and grammars can characterise the
+    words and sentences of a language and bilingual dictionaries can do the same between languages, there is nothing
+    similar for discourse. For discourse, however, discourse-annotated corpora are becoming available in individual
+    languages.
+    <br>
+    <br>
+    The TextLink Action will facilitate European multilingualism by (1) identifying and creating a portal into such
+    resources within Europe “including annotation tools, search tools, and discourse-annotated corpora; (2) delineating
+    the dimensions and properties of discourse annotation across corpora; (3) organising these properties into a
+    sharable taxonomy; (4) encouraging the use of this taxonomy in subsequent discourse annotation and in cross-lingual
+    search and studies of devices that relate and structure discourse; and (5) promoting use of the portal, its
+    resources and sharable taxonomy. With partners from across Europe, TextLink will unify numerous but scattered
+    linguistic resources on discourse structure. With its resources searchable by form and/or meaning and a source of
+    valuable correspondences, TextLink will enhance the experience and performance of human translators, lexicographers,
+    language technology and language learners alike.
+    <br>
+    <br>
+    Currently TextLink has over 150 members from across our 26 member countries and 2 International Partner Countries,
+    contributing to 4 working groups. The Action is funded by Cost (www.cost.eu), a European framework that supports
+    trans-national cooperation among researchers, engineers and scholars across Europe. The TextLink Action will run
+    from 11 April 2014 to 10 April 2018.
 
-    </form>
+</div>
 
-    <p><a href="{% url 'home' %}">Return to home</a></p>
-{% endblock %}
+<div class="main2">
+    <h4>
+        Upload File
+    </h4>
+
+    <br>
+
+    Currently TextLink has over 150 members from across our 26 member countries and 2 International Partner Countries,
+    contributing to 4 working groups. The Action is funded by Cost (www.cost.eu), a European framework that supports
+    trans-national cooperation among researchers, engineers and scholars across Europe. The TextLink Action will run
+    from 11 April 2014 to 10 April 2018.
+    <br>
+    <br>
+    <br>
+
+    {% block content %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_ul }}
+            <br>
+            <input type="radio" name="language" value="English"> English
+            <input type="radio" name="language" value="German"> German
+            <input type="radio" name="language" value="Turkish"> Turkish
+            <br>
+            <br>
+            <input type="radio" name="annotation_tool" value="pdtb_annotator"> PDTB Annotator
+            <input type="radio" name="annotation_tool" value="datt"> DATT
+            <br>
+            <br>
+
+            <button type="submit">Upload File(s)</button>
+
+        </form>
+
+        <form action="">
+
+        </form>
+
+        <p><a href="{% url 'home' %}">Return to home</a></p>
+    {% endblock %}
+</div>

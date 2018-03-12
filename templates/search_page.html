@@ -265,6 +265,15 @@
         padding: 15px 15px;
     }
 
+    .fixed-navbar2 {
+        overflow: hidden;
+        background-color: #e3b328;
+        position: relative;
+        top: 0;
+        width: 100%;
+        text-align: center;
+    }
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -276,11 +285,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+<div class="fixed-navbar2">
+    <h2>TextLink Web Portal</h2>
+</div>
 <div class="fixed-navbar">
-    <a href="#home">Home</a>
+    <a href="http://localhost:8000/upload_annotations">Home</a>
     <a href="#usage">Usage</a>
     <a href="#contact">Contact</a>
     <a style="float:right" href="/ted_mdb">TED-MDB</a>
+    <a style="float:right" href="/upload/search_page">File Browser</a>
+
 </div>
 <!--
 <button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
@@ -313,63 +327,6 @@
     <br>
 </div>
 -->
-<button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
-<div id="file_menu" class="collapse">
-    <!--
-    <div id="file_select" class="section">
-        Selected File:
-        <br>
-        {% csrf_token %}
-        <select id='file-select' name='file-select' method="get">
-            {% for obj in documents %}
-                <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
-            {% endfor %}
-
-        </select>
-
-    </div>
-    -->
-    <div id="upload_div" class="section">
-        <h5 style="float:left">Click here to upload new files </h5>
-        <br>
-        <br>
-        <form action="" method="post">
-            {% csrf_token %}
-            <input type="submit" name="upload-button" value="Upload" style="float:left">
-        </form>
-    </div>
-    <div class="tab">
-        {% for file in file_array %}
-            <button class="tablinks" id="{{ file.id }}"
-                    onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
-        {% endfor %}
-    </div>
-
-    {% for id,annotations in annotations_array.iteritems %}
-        <div id=info_{{ id }} class="alert alert-success"
-             style="margin-bottom: 0px; display:none"> {{ annotations|length }} relations
-            have been
-            found
-        </div>
-    {% endfor %}
-
-    {% for id,annotations in annotations_array.iteritems %}
-        <select name=annotationList_{{ id }} id=annotation-select_{{ id }} class="anno_content" style="display:none"
-                multiple size='30'>
-            {% for ann in annotations %}
-                <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
-                    | {{ ann.sense1 }}
-                    | {{ ann.sense2 }}</option>
-            {% endfor %}
-        </select>
-    {% endfor %}
-
-    {% for file in file_array %}
-        <div id=raw_{{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
-            {{ file.raw_file.read }}
-        </div>
-    {% endfor %}
-</div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
 <div id="se-demo" class="collapse">
     Select sense for query:
@@ -450,6 +407,63 @@
     <button class="button" name="download-all-button">Download All Files (Excel)</button>
     <br>
     <br>
+</div>
+<button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File Menu</button>
+<div id="file_menu" class="collapse">
+    <!--
+    <div id="file_select" class="section">
+        Selected File:
+        <br>
+        {% csrf_token %}
+        <select id='file-select' name='file-select' method="get">
+            {% for obj in documents %}
+                <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
+            {% endfor %}
+
+        </select>
+
+    </div>
+    -->
+    <div id="upload_div" class="section">
+        <h5 style="float:left">Click here to upload new files </h5>
+        <br>
+        <br>
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" name="upload-button" value="Upload" style="float:left">
+        </form>
+    </div>
+    <div class="tab">
+        {% for file in file_array %}
+            <button class="tablinks" id="{{ file.id }}"
+                    onclick="openFile(event, {{ file.id }})">{{ file.filename }}</button>
+        {% endfor %}
+    </div>
+
+    {% for id,annotations in annotations_array.iteritems %}
+        <div id=info_{{ id }} class="alert alert-success"
+             style="margin-bottom: 0px; display:none"> {{ annotations|length }} relations
+            have been
+            found
+        </div>
+    {% endfor %}
+
+    {% for id,annotations in annotations_array.iteritems %}
+        <select name=annotationList_{{ id }} id=annotation-select_{{ id }} class="anno_content" style="display:none"
+                multiple size='30'>
+            {% for ann in annotations %}
+                <option value="{{ ann.id }} ">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
+                    | {{ ann.sense1 }}
+                    | {{ ann.sense2 }}</option>
+            {% endfor %}
+        </select>
+    {% endfor %}
+
+    {% for file in file_array %}
+        <div id=raw_{{ file.id }} class="txt" style="display:none" name='out' contenteditable='false' align="justify">
+            {{ file.raw_file.read }}
+        </div>
+    {% endfor %}
 </div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#dimlex_div">Dimlex Information</button>
 <div id="dimlex_div" class="collapse">

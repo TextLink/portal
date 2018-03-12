@@ -24,7 +24,7 @@ from portal import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^home/', views.home, name='home'),
+    url(r'^home/', views.upload_annotations, name='home'),
     url(r'^get_connectives_wrt_language', csrf_exempt(views.get_connectives_wrt_language),
         name='get_connectives_wrt_language'),
     url(r'^get_sense_wrt_connective', csrf_exempt(views.get_senses_wrt_connective),
