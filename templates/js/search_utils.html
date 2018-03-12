@@ -339,6 +339,19 @@
         var chart = new google.visualization.PieChart(document.getElementById(attr_id));
         chart.draw(data, options);
     }
+    function disable()
+    {
+       var chosen = $("[name='base-select']").val();
+       if (chosen == "sense") {
+           $("[name='type-select']").prop("disabled", true);
+           $("[name='sense-select']").prop("disabled", false);
+       }
+        else {
+            $("[name='type-select']").prop("disabled", false);
+           $("[name='sense-select']").prop("disabled", true);
+       }
+
+    }
 
     $(document).ready(function () {
 
@@ -348,6 +361,7 @@
         $("[name='download-pdtb-button']").click(download_pdtb);
         $("[name='download-all-button']").click(download_all);
         $("[name='search-button']").click(senseSearch);
+        $("[name='base-select']").change(disable);
         $("[name='compute-total-stats']").click(compute_total_stats);
         $("[name='compute-files-stats']").click(compute_files_stats);
         $('.tablinks').each(function () {
