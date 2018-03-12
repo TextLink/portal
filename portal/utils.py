@@ -83,7 +83,7 @@ def update_html(text, annotation):
     return text  # PDTB Annotation Methods
 
 
-def populate_ann_db(file, data, contents, language, user_id):
+def populate_ann_db(file, data, contents, annotation_tool, user_id):
     contents = contents.replace("\n", "")
     ann_array = data.split("\n")
     for ann in ann_array:
@@ -113,12 +113,12 @@ def populate_ann_db(file, data, contents, language, user_id):
                            arg2=arg2[0], arg2Beg=arg2_index[0], arg2End=arg2_index[1],
                            arg22=arg2[1], arg2Beg2=arg2_index[2], arg2End2=arg2_index[3],
                            sense1=sense1, sense2=sense2,
-                           file=file, type=type, language=language,
+                           file=file, type=type, annotation_tool=annotation_tool,
                            user_id=user_id
                            ).save()
 
 
-def populate_ann_db_xml(file_name, xml_file, language, user_id):
+def populate_ann_db_xml(file_name, xml_file, annotation_tool, user_id):
     doc = minidom.parse(xml_file)
     relations = doc.getElementsByTagName("Relation")
 
@@ -166,7 +166,7 @@ def populate_ann_db_xml(file_name, xml_file, language, user_id):
                        arg2=arg2[0], arg2Beg=arg2Beg[0], arg2End=arg2End[0],
                        arg22=arg2[1], arg2Beg2=arg2Beg[1], arg2End2=arg2End[1],
                        sense1=sense, sense2=sense2,
-                       file=file_name, type=type, language=language,
+                       file=file_name, type=type, annotation_tool=annotation_tool,
                        user_id=user_id
                        ).save()
 

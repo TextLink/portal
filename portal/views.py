@@ -29,21 +29,21 @@ def upload_annotations(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             ann_tool = request.POST['annotation_tool']
-            if ann_tool == 'pdtb_annotator':
+            if ann_tool == 'pdtb':
                 data = request.FILES['ann_file'].read()
                 contents = smart_unicode(request.FILES['raw_file'].read())
-                language = request.POST['language']
+                #language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
-                populate_ann_db(file_name, data, contents, language, request.session['user_id'])
+                populate_ann_db(file_name, data, contents, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
                 file_object.filename = file_name
                 file_object.user_id = request.session['user_id']
                 file_object.save()
             elif ann_tool == 'datt':
                 xml_file = request.FILES['ann_file']
-                language = request.POST['language']
+                #language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
-                populate_ann_db_xml(file_name, xml_file, language, request.session['user_id'])
+                populate_ann_db_xml(file_name, xml_file, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
                 file_object.filename = request.FILES['ann_file'].name
                 file_object.user_id = request.session['user_id']
@@ -68,9 +68,9 @@ def highlight_rest(request):
         #    text = smart_unicode(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read()).replace(
         #        "\n", "")
 
-        lang = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('language')[0]
+        ann_tool = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('annotation_tool')[0]
 
-        if lang['language'] == 'Turkish':
+        if ann_tool['annotation_tool'] == 'datt':
             with codecs.open(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.path, 'r',
                              encoding='utf8') as f:
                 text = f.read().replace("\n", " ")

@@ -41,6 +41,7 @@ class pdtbAnnotation(models.Model):
     arg2End2 = models.IntegerField(null=True)
     # language
     language = models.CharField(max_length=100, null=True)
+    annotation_tool = models.CharField(max_length=100, null=True)
     user_id = models.CharField(max_length=1000, null=False, default="none")
 
 

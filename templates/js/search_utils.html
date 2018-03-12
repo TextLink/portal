@@ -189,8 +189,10 @@
 
                                 if (data[key][i]['sem'][s].hasOwnProperty('pdtb2_relation')) {
                                     rel_type = "pdtb2_relation";
-                                } else {
+                                } else if (data[key][i]['sem'][s].hasOwnProperty('pdtb3_relation')) {
                                     rel_type = "pdtb3_relation";
+                                } else {
+                                    rel_type = "sdrt_relation";
                                 }
 
                                 dimlex_info += "<p style='margin-bottom:2px;'>\n" +
