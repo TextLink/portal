@@ -16,10 +16,6 @@ import json
 from django.utils.encoding import smart_unicode
 
 
-def home(request):
-    return HttpResponse("Welcome")
-
-
 def upload_annotations(request):
     request.session.set_expiry(0)
     if 'user_id' not in request.session:
@@ -32,7 +28,7 @@ def upload_annotations(request):
             if ann_tool == 'pdtb':
                 data = request.FILES['ann_file'].read()
                 contents = smart_unicode(request.FILES['raw_file'].read())
-                #language = request.POST['language']
+                # language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
                 populate_ann_db(file_name, data, contents, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
@@ -41,7 +37,7 @@ def upload_annotations(request):
                 file_object.save()
             elif ann_tool == 'datt':
                 xml_file = request.FILES['ann_file']
-                #language = request.POST['language']
+                # language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
                 populate_ann_db_xml(file_name, xml_file, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
@@ -703,11 +699,11 @@ def get_senses_wrt_connective(request):
             word = []
             pdtb3_relations[i.connective] = word
             for s in i.metadata['syn']:
-                #a = {"word": i.connective, "category": i.metadata['syn'][s]['cat'], "relation": i.metadata['syn'][s]['sem']}
+                # a = {"word": i.connective, "category": i.metadata['syn'][s]['cat'], "relation": i.metadata['syn'][s]['sem']}
                 pdtb3_relations[i.connective].append(s)
             # pdtb3_relations = selected_connective.metadata['syn'][0]['sem']
             c = c + 1
-        #return HttpResponse(json.dumps(pdtb3_relations))
+        # return HttpResponse(json.dumps(pdtb3_relations))
         return HttpResponse(json.dumps(pdtb3_relations))
 
 
