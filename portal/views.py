@@ -579,7 +579,7 @@ def download_excel(request):
         annotation = ""
         for a in orderedArgMap:
             annotation = annotation + " " + orderedArgMap[a]
-        print annotation
+        # print annotation
         val = getattr(obj, "type")
         if callable(val):
             val = val()
@@ -605,7 +605,7 @@ def download_all(request):
     writer = csv.writer(response)
     # name = pdtbAnnotation._name_
     # Write headers to CSV file
-    headers = ["Type", "Sense", "2nd Sense", "Annotation(raw)"]
+    headers = ["File", "Type", "Sense", "2nd Sense", "Annotation(raw)"]
 
     writer.writerow(headers)
     # Write data to CSV file
@@ -625,7 +625,10 @@ def download_all(request):
             annotation = ""
             for a in orderedArgMap:
                 annotation = annotation + " " + orderedArgMap[a]
-            print annotation
+            # print annotation
+
+            row.append(key.encode('UTF-8'))
+
             val = getattr(obj, "type")
             if callable(val):
                 val = val()
