@@ -199,6 +199,25 @@
         width:15%;
         overflow:hidden;
     }
+
+    .search-options-first-langage {
+        height: 200px;
+       float:left;
+        width:50%;
+        overflow:hidden;
+    }
+
+
+    .search-options-target {
+                height: 200px;
+
+       float:left;
+        width:50%;
+        overflow:hidden;
+    }
+
+
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -256,6 +275,8 @@ File:
 </div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
 <div id="se-demo" class="collapse">
+
+<div class="search-options-first-langage">
     Select sense:
 <br>
     <div class="teset">
@@ -272,7 +293,6 @@ File:
         </select>
     </div>
     <div class="teset">
-
         <p>
             <select id="select-operator" name="operator">
                 <option value="none" hidden></option>
@@ -286,14 +306,12 @@ File:
                     {% if '.' not in sense %}
                         </optgroup>
                         <optgroup label="{{ sense }} ">
-
                     {% endif %}
                     <option value="{{ sense }} ">{{ sense }} </option>
                 {% endfor %}
             </select>
         </p>
     </div>
-
     <br>
     <br>
     <div class="MSbox">
@@ -303,7 +321,7 @@ File:
     </div>
     <br>
     Select connective:
-<br>
+    <br>
     <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
             tabindex='11'>
         {% for key, value in connective_array.items %}
@@ -311,21 +329,54 @@ File:
         {% endfor %}
     </select>
     <form class="alert alert-info" id="checkbox-form">
-
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
         <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
-    <button class="button" name="search-button">Search</button>
+{% comment %}
+    <div class="Multiple-Language-Search">
+        <input type="checkbox" id="MLS" name="MLS" value="1">
+        Multiple Language Search
+        <input type="hidden" id="MLS" name="MLS" value="0"/>
+    </div>
+    {% endcomment %}
+</div>
 
-    <button name="reset">Reset</button>
+
+<t>
+<div class="search-options-target">
+    Select Sense in Target Language:
+<br>
+    <div class="teset">
+        <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
+                class='chosen-select'
+                tabindex='11'>
+            {% for sense in senses %}
+                {% if '.' not in sense %}
+                    </optgroup>
+                    <optgroup label="{{ sense }} ">
+                {% endif %}
+                <option value="{{ sense }} ">{{ sense }} </option>
+            {% endfor %}
+        </select>
+    </div>
+
     <br>
-
+    <br>
+    <form class="alert alert-info" id="checkbox-form">
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+    </form>
+</div>
+</t>
+    <button class="button" name="search-button">Search</button>
+    <button name="reset">Reset</button>
 </div>
 
 <div class="section" id="first_language">
-
     <div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
     <select name='annotationList' id='annotation-select' multiple size='30'>
         {% for ann in annotations %}
@@ -334,8 +385,6 @@ File:
                 | {{ ann.sense2 }}</option>
         {% endfor %}
     </select>
-
-
     <div id='txt' name='out' contenteditable='false'>
         {{ selected_file_content }}
     </div>
@@ -343,9 +392,7 @@ File:
 
 
 <div class="section" id="second_language">
-
     <div id="info" class="alert alert-success"> {{ eng_annotations|length }} relations have been found</div>
-
     <select name='annotationList' id='annotation-select' multiple size='30'>
         {% for ann in eng_annotations %}
             <option value="{{ ann.ann_id }}">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
