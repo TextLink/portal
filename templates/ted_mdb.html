@@ -22,7 +22,7 @@
     }
 
     button.accordion {
-        background-color: #eee;
+        background-color: aliceblue;
         color: #444;
         cursor: pointer;
         padding: 18px;
@@ -35,7 +35,7 @@
     }
 
     button.accordion.active, button.accordion:hover {
-        background-color: #ccc;
+        background-color: deepskyblue;
     }
 
     button.accordion:after {
@@ -52,7 +52,7 @@
 
     .fixed-navbar {
         overflow: hidden;
-        background-color: #8B4513;
+        background-color: lightskyblue;
         position: relative;
         top: 0;
         width: 100%;
@@ -61,7 +61,7 @@
     .fixed-navbar a {
         float: left;
         display: block;
-        color: #f2f2f2;
+        color: black;
         text-align: center;
         padding: 14px 16px;
         text-decoration: none;
@@ -69,7 +69,7 @@
     }
 
     .file-div {
-        background-color: #FFF8DC;
+        background-color: white;
         float: right;
         position: relative;
         width: 100%;
@@ -78,7 +78,7 @@
     .file-div a {
         float: left;
         display: block;
-        color: #f2f2f2;
+        color: white;
         text-align: center;
         padding: 14px 16px;
         text-decoration: none;
@@ -95,7 +95,7 @@
         position: relative;
         height: 600px;
         white-space: pre-wrap;
-        font-size: 16px;
+        font-size: 13px;
         overflow-y: scroll;
         resize: vertical;
         padding-top: 10px;
@@ -108,7 +108,7 @@
         overflow: scroll;
         height: 600px;
         font-family: 'Times New Roman';
-        font-size: 16px;
+        font-size: 13px;
     }
 
     #sense-select {
@@ -141,11 +141,15 @@
     }
 
     #file_menu {
-        background-color: #D2B48C;
+        height: 80px;
+        background: white;
+        margin: auto;
+        padding: 10px;
+        background-color: white;
     }
 
     #se-demo {
-        background-color: #D2B48C;
+        background-color: white;
     }
 
     .teset {
@@ -179,12 +183,41 @@
 
     .fixed-navbar2 {
         overflow: hidden;
-        background-color: #e3b328;
+        background-color: dodgerblue;
         position: relative;
         top: 0;
         width: 100%;
         text-align: center;
     }
+    .file-div {
+        float:left;
+        width:15%;
+        overflow:hidden;
+    }
+    .language-div {
+       float:left;
+        width:15%;
+        overflow:hidden;
+    }
+
+    .search-options-first-langage {
+        height: 200px;
+       float:left;
+        width:50%;
+        overflow:hidden;
+    }
+
+
+    .search-options-target {
+                height: 200px;
+
+       float:left;
+        width:50%;
+        overflow:hidden;
+    }
+
+
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -202,22 +235,30 @@
     <h2>TextLink Web Portal</h2>
 </div>
 <div class="fixed-navbar">
-    <a href="#home">Home</a>
+    <a href="/upload_annotations">Home</a>
     <a href="#usage">Usage</a>
     <a href="#contact">Contact</a>
     <a style="float:right" href="/ted_mdb">TED-MDB</a>
+    <a style="float:right" href="/upload/search_page">File Browser</a>
+
 </div>
 
 <button type="button" class="accordion" data-toggle="collapse" data-target="#file_menu">File/Language Menu</button>
 <div id="file_menu" class="collapse">
-    <br>
 
+<div class="language-div">
+    Language:
+<br>
     <select id='language-select' name='language-select' method="get">
         {% for lang in all_languages %}
             <option value="{{ lang.language }} ">{{ lang.language }}</option>
         {% endfor %}
     </select>
     {% csrf_token %}
+</div>
+<div class="file-div">
+File:
+<br>
     <select id='file-select' name='file-select' method="get">
         {% for obj in documents %}
             <option value="{{ obj.filename }} ">{{ obj.filename }}</option>
@@ -232,14 +273,15 @@
 
         {% endfor %}
     </select>
-
-    <br>
-    <br>
+</div>
 </div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
 <div id="se-demo" class="collapse">
-    <div class="teset">
 
+<div class="search-options-first-langage">
+    Select sense:
+<br>
+    <div class="teset">
         <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
                 class='chosen-select'
                 tabindex='11'>
@@ -253,7 +295,6 @@
         </select>
     </div>
     <div class="teset">
-
         <p>
             <select id="select-operator" name="operator">
                 <option value="none" hidden></option>
@@ -267,14 +308,12 @@
                     {% if '.' not in sense %}
                         </optgroup>
                         <optgroup label="{{ sense }} ">
-
                     {% endif %}
                     <option value="{{ sense }} ">{{ sense }} </option>
                 {% endfor %}
             </select>
         </p>
     </div>
-
     <br>
     <br>
     <div class="MSbox">
@@ -283,7 +322,8 @@
         <input type="hidden" id="MS" name="MS" value="0"/>
     </div>
     <br>
-
+    Select connective:
+    <br>
     <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
             tabindex='11'>
         {% for key, value in connective_array.items %}
@@ -291,21 +331,54 @@
         {% endfor %}
     </select>
     <form class="alert alert-info" id="checkbox-form">
-
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
         <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
-    <button class="button" name="search-button">Search</button>
+{% comment %}
+    <div class="Multiple-Language-Search">
+        <input type="checkbox" id="MLS" name="MLS" value="1">
+        Multiple Language Search
+        <input type="hidden" id="MLS" name="MLS" value="0"/>
+    </div>
+    {% endcomment %}
+</div>
 
-    <button name="reset">Reset</button>
+
+<t>
+<div class="search-options-target">
+    Select Sense in Target Language:
+<br>
+    <div class="teset">
+        <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
+                class='chosen-select'
+                tabindex='11'>
+            {% for sense in senses %}
+                {% if '.' not in sense %}
+                    </optgroup>
+                    <optgroup label="{{ sense }} ">
+                {% endif %}
+                <option value="{{ sense }} ">{{ sense }} </option>
+            {% endfor %}
+        </select>
+    </div>
+
     <br>
-
+    <br>
+    <form class="alert alert-info" id="checkbox-form">
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+    </form>
+</div>
+</t>
+    <button class="button" name="search-button">Search</button>
+    <button name="reset">Reset</button>
 </div>
 
 <div class="section" id="first_language">
-
     <div id="info" class="alert alert-success"> {{ annotations|length }} relations have been found</div>
     <select name='annotationList' id='annotation-select' multiple size='30'>
         {% for ann in annotations %}
@@ -314,8 +387,6 @@
                 | {{ ann.sense2 }}</option>
         {% endfor %}
     </select>
-
-
     <div id='txt' name='out' contenteditable='false'>
         {{ selected_file_content }}
     </div>
@@ -323,12 +394,10 @@
 
 
 <div class="section" id="second_language">
-
     <div id="info" class="alert alert-success"> {{ eng_annotations|length }} relations have been found</div>
-
     <select name='annotationList' id='annotation-select' multiple size='30'>
         {% for ann in eng_annotations %}
-            <option value="{{ ann.ann_id }} ">{{ ann.ann_id }} - {{ ann.conn }} ({{ ann.type }})
+            <option value="{{ ann.ann_id }}">{{ forloop.counter }} - {{ ann.conn }} ({{ ann.type }})
                 | {{ ann.sense1 }}
                 | {{ ann.sense2 }}</option>
         {% endfor %}

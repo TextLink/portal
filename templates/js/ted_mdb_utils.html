@@ -146,6 +146,7 @@
                     eng_key = key
                 });
                 $('#second_language').find('#annotation-select').val(eng_key);
+
                 $('#second_language').find('#annotation-select').change();
             },
             error: function () {
@@ -307,13 +308,21 @@
     window.onload = function () {
         $(".chosen-select").chosen({
                             width: '250px',
-
                 no_results_text: "Oops, nothing found!"
             }
         );
         $('p').hide();
+        $('p2').hide();
+
         $("#select-operator").hide();
         $("#select-operator").val("none");
+
+        $("#select-operator").hide();
+        $("#select-operator").val("none");
+
+
+        $('t').hide();
+        $('.search-options-first-langage').css('width','100%');
         $('#MS').click(function () {
                 //this.form.submit();
                 if ($(this).is(':checked')) {
@@ -326,6 +335,19 @@
                     $('p').hide();
                     $("[name='sense2List[]").val('').trigger('chosen:updated');
                     $("#select-operator").hide();
+                }
+            }
+        );
+
+        $('#MLS').click(function () {
+                //this.form.submit();
+                if ($(this).is(':checked')) {
+                    $('t').show();
+                    $('.search-options-first-langage').css('width','50%');
+                }
+                else {
+                    $('t').hide();
+                    $('.search-options-first-langage').css('width','100%');
                 }
             }
         );
