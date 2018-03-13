@@ -354,17 +354,27 @@
         var chart = new google.visualization.PieChart(document.getElementById(attr_id));
         chart.draw(data, options);
     }
-    function disable()
-    {
-       var chosen = $("[name='base-select']").val();
-       if (chosen == "sense") {
-           $("[name='type-select']").prop("disabled", true);
-           $("[name='sense-select']").prop("disabled", false);
-       }
+
+    function disable() {
+        var chosen = $("#file-base-select").val();
+        if (chosen == "sense") {
+            $("#file-type-select").prop("disabled", true);
+            $("#file-sense-select").prop("disabled", false);
+        }
         else {
-            $("[name='type-select']").prop("disabled", false);
-           $("[name='sense-select']").prop("disabled", true);
-       }
+            $("#file-type-select").prop("disabled", false);
+            $("#file-sense-select").prop("disabled", true);
+        }
+
+        var chosen_total = $("#total-base-select").val();
+        if (chosen_total == "sense") {
+            $("#total-type-select").prop("disabled", true);
+            $("#total-sense-select").prop("disabled", false);
+        }
+        else {
+            $("#total-type-select").prop("disabled", false);
+            $("#total-sense-select").prop("disabled", true);
+        }
 
     }
 
