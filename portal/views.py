@@ -313,6 +313,17 @@ def search_sense_rest(request):
             annotations = annotations.filter(
                 reduce(operator.or_, (Q(type=t) for t in selected_types)))
 
+        if request.method == 'GET' and 'file' in request.GET and "keyword" in request.GET and "keyword-arg" in request.GET:
+            keyword = request.GET['keyword']
+            keyword_args = request.GET['keyword-arg'].split(',')
+            if ("arg1" in keyword_args and "arg2" in keyword_args):
+                annotations = annotations.filter(Q(arg1__contains=keyword) | Q(arg12__contains=keyword)
+                                                 | Q(arg2__contains=keyword) | Q(arg22__contains=keyword))
+            elif ("arg1" in keyword_args):
+                annotations = annotations.filter(Q(arg1__contains=keyword) | Q(arg12__contains=keyword))
+            else:
+                annotations = annotations.filter(Q(arg2__contains=keyword) | Q(arg22__contains=keyword))
+
         for a in annotations:
             annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
         result = dict()

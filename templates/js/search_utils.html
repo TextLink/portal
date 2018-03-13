@@ -68,7 +68,11 @@
         $('#MS').attr('checked', false); // Checks it
         $('p').hide();
         $("#select-operator").hide();
+        $("#keyword").val('').trigger("");
         $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+        $("input:checkbox[name=arg]:checked").each(function () {
             $(this).prop('checked', false);
         });
         $("#dimlex_div").html(null);
@@ -128,6 +132,21 @@
         if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
             ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
         }
+
+        if ($("#keyword").val() !== null && $("#keyword").val() !== "") {
+            ajax_url = ajax_url + '&keyword=' + $("#keyword").val();
+
+            if ($("#keyword-search input:checkbox:checked").length > 0) {
+                ajax_url = ajax_url + '&keyword-arg=';
+            } else {
+                alert("Please select argument span for keyword search!");
+            }
+
+            $("input:checkbox[name=arg]:checked").each(function () {
+                ajax_url = ajax_url + $(this).val() + ",";
+            });
+        }
+
         $.ajax({
             url: ajax_url,
             type: 'GET',
