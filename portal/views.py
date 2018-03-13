@@ -5,7 +5,7 @@ import codecs
 import csv
 import operator
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from portal.forms import *
 from utils import *
@@ -545,6 +545,13 @@ def download(request):
     return response
 ## DOWNLOAD
 '''
+
+
+def delete_file(request):
+    filename = request.GET['filename']
+    pdtbAnnotation.objects.filter(file=filename).delete()
+    uploaded_files.objects.filter(filename=filename).delete()
+    return HttpResponseRedirect('/upload/search_page/')
 
 
 def download_excel(request):

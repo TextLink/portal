@@ -44,6 +44,7 @@ urlpatterns = [
 
     url(r'^highlight_rest', csrf_exempt(views.highlight_rest), name='highlight_rest'),
     url(r'^download_excel', csrf_exempt(views.download_excel), name='download_excel'),
+    url(r'^delete_file', csrf_exempt(views.delete_file), name='delete_file'),
     url(r'^download_pdtb', csrf_exempt(views.download_pdtb), name='download_pdtb'),
     url(r'^download_all', csrf_exempt(views.download_all), name='download_all'),
     url(r'^ted_mdb/', csrf_exempt(views.ted_mdb), name='ted_mdb.html'),

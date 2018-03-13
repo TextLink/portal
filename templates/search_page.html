@@ -216,9 +216,9 @@
     .section {
         float: right;
         width: 100%;
-        height: 90px;
+        height: 160px;
         padding: 10px;
-        padding-bottom: 10px;
+        padding-bottom: 5px;
         background-color: white;
     }
 
@@ -393,7 +393,6 @@
     <br>
     <br>
     Select file to download:
-    <br>
     <select name='downloadFileList[]' id='download-file-select' data-placeholder='File'
             tabindex='11'>
         {% for file in file_array %}
@@ -425,14 +424,26 @@
     </div>
     -->
     <div id="upload_div" class="section">
-        <h5 style="float:left">Click here to upload new files </h5>
-        <br>
-        <br>
+        Click here to upload new files:
         <form action="" method="post">
             {% csrf_token %}
             <input type="submit" name="upload-button" value="Upload" style="float:left">
         </form>
+        <br>
+        <br>
+        Select file to delete:
+
+        <select name='deleteFileList[]' id='delete-file-select' data-placeholder='File'
+                tabindex='11'>
+            {% for file in file_array %}
+                <option value="{{ file.filename }} "> {{ file.filename }} </option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+        <button class="button" name="delete-button">Delete</button>
     </div>
+
     <div class="tab">
         {% for file in file_array %}
             <button class="tablinks" id="{{ file.id }}"
