@@ -30,12 +30,12 @@ def upload_annotations(request):
                 contents = smart_unicode(request.FILES['raw_file'].read())
                 # language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
-                pdtbAnnotation.objects.filter(file=file_name).delete() #if same file is updated again
+                pdtbAnnotation.objects.filter(file=file_name).delete()  # if same file is updated again
                 populate_ann_db(file_name, data, contents, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
                 file_object.filename = file_name
                 file_object.user_id = request.session['user_id']
-                uploaded_files.objects.filter(filename=file_name).delete() #if same file is updated again
+                uploaded_files.objects.filter(filename=file_name).delete()  # if same file is updated again
                 file_object.save()
             elif ann_tool == 'datt':
                 xml_file = request.FILES['ann_file']
@@ -284,10 +284,10 @@ def search_sense_rest(request):
             if query_operator == "and":
                 tmp1 = annotations.filter(
                     reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)),
-                    reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)) )
+                    reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
                 tmp2 = annotations.filter(
                     reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)),
-                    reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)) )
+                    reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)))
                 annotations = tmp1 | tmp2
             else:
                 tmp1 = annotations.filter(
@@ -326,6 +326,7 @@ def search_sense_rest(request):
 
     return HttpResponse(json.dumps(all_results))
 
+
 # ONLOAD
 def search_page_rest(request):
     documents = uploaded_files.objects.filter()
@@ -334,18 +335,24 @@ def search_page_rest(request):
         file_array = uploaded_files.objects.all()
 
         all_results = dict()
+        annotations_array = {}
+        annotations_dict = {}
+        file_ids = []
 
         for file in file_array:
             annotation_list = dict()
             selected_file_name = file.filename
-            annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+            file_ids.append(file.id)
+            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+            annotations_dict[selected_file_name] = annotations_array[file.id]
             result = dict()
             result['text'] = file.raw_file.read()
-            for a in annotations:
+            for a in annotations_array[file.id]:
                 annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
             result['annotation_list'] = annotation_list
             all_results[file.id] = result
 
+        request.session['search_results'] = annotations_dict
         return HttpResponse(json.dumps(all_results))
 
     if request.method == 'POST':
@@ -407,6 +414,7 @@ def search_page_rest(request):
                                                 'annotations_array': annotations_array,
                                                 'file_ids': file_ids
                                                 })
+
 
 ####### SEARCH ##############
 
@@ -529,6 +537,7 @@ def compute_files_stats(request):
         file_stats[file.id] = stats
 
     return HttpResponse(json.dumps(file_stats))
+
 
 '''
 ## DOWNLOAD
