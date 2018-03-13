@@ -8,3 +8,4 @@ class DocumentForm(forms.ModelForm):
         fields = ('ann_file', 'raw_file',  )
         annotationFile = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple':True}))
         rawFile = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+

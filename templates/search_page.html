@@ -273,6 +273,8 @@
         width: 100%;
         text-align: center;
     }
+    select[disabled] { background-color: dimgrey; }
+
 
 </style>
 <!DOCTYPE html>
@@ -491,13 +493,13 @@
                 <option value="Implicit">Implicit</option>
                 <option value="AltLex">AltLex</option>
                 <option value="EntRel">EntRel</option>
-                <option value="NoRel">EntRel</option>
+                <option value="NoRel">NoRel</option>
             </select>
         </div>
         <div id="sense_select" class="statsection">
             Selected Sense:
             <br>
-            <select id='file-sense-select' name='sense-select' method="get">
+            <select id='file-sense-select' name='sense-select' method="get" disabled>
                 <option value="ALL" selected>ALL</option>
                 <option value="TEMPORAL">TEMPORAL</option>
                 <option value="CONTINGENCY">CONTINGENCY</option>

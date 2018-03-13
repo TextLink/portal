@@ -30,10 +30,12 @@ def upload_annotations(request):
                 contents = smart_unicode(request.FILES['raw_file'].read())
                 # language = request.POST['language']
                 file_name = request.FILES['ann_file'].name
+                pdtbAnnotation.objects.filter(file=file_name).delete() #if same file is updated again
                 populate_ann_db(file_name, data, contents, ann_tool, request.session['user_id'])
                 file_object = form.save(commit=False)
                 file_object.filename = file_name
                 file_object.user_id = request.session['user_id']
+                uploaded_files.objects.filter(filename=file_name).delete() #if same file is updated again
                 file_object.save()
             elif ann_tool == 'datt':
                 xml_file = request.FILES['ann_file']
@@ -279,9 +281,25 @@ def search_sense_rest(request):
             query_operator = request.GET['op']
             selected_senses = selected_senses.split(',')
             selected_senses2 = selected_senses2.split(',')
-            annotations = annotations.filter(
-                reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)),
-                reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
+            if query_operator == "and":
+                tmp1 = annotations.filter(
+                    reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)),
+                    reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)) )
+                tmp2 = annotations.filter(
+                    reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)),
+                    reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)) )
+                annotations = tmp1 | tmp2
+            else:
+                tmp1 = annotations.filter(
+                    reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)))
+                tmp1 = tmp1.exclude(
+                    reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
+                tmp2 = annotations.filter(
+                    reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)))
+                tmp2 = tmp2.exclude(
+                    reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)))
+                annotations = tmp1 | tmp2
+
         # CONN
         if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
             selected_connectives = request.GET['connective'].replace(" ", "")
@@ -308,6 +326,89 @@ def search_sense_rest(request):
 
     return HttpResponse(json.dumps(all_results))
 
+# ONLOAD
+def search_page_rest(request):
+    documents = uploaded_files.objects.filter()
+
+    if request.method == 'GET' and 'reset' in request.GET:
+        file_array = uploaded_files.objects.all()
+
+        all_results = dict()
+
+        for file in file_array:
+            annotation_list = dict()
+            selected_file_name = file.filename
+            annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+            result = dict()
+            result['text'] = file.raw_file.read()
+            for a in annotations:
+                annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+            result['annotation_list'] = annotation_list
+            all_results[file.id] = result
+
+        return HttpResponse(json.dumps(all_results))
+
+    if request.method == 'POST':
+        return redirect('upload_annotations.html')
+
+    # ON LOAD
+
+    file_array = uploaded_files.objects.all()
+
+    annotations_array = {}
+    annotations_dict = {}
+    file_ids = []
+
+    all_senses = list()
+    all_connectives = {}
+
+    for file in file_array:
+        selected_file_name = file.filename
+        file_ids.append(file.id)
+        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+        annotations_dict[selected_file_name] = annotations_array[file.id]
+        senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
+                                                                               'sense2').distinct()
+        sense_array = prepareSenseList(senses)
+        all_senses.extend(sense_array)
+
+        connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
+            'conn', 'conn2',
+            'type').distinct()
+        connective_array = prepareConnList(connectives)
+        all_connectives.update(connective_array)
+
+    all_senses = set(all_senses)
+    all_senses = list(all_senses)
+    all_senses.sort()
+
+    all_connectives = collections.OrderedDict(all_connectives)
+
+    request.session['search_results'] = annotations_dict
+
+    first = uploaded_files.objects.filter().first()
+    selected_file_name = first.filename
+    selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
+    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+    senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
+                                                                           'sense2').distinct()
+    connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
+        'conn', 'conn2',
+        'type').distinct()
+    connective_array = prepareConnList(connectives)
+
+    sense_array = prepareSenseList(senses)
+    return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
+                                                'selectedFile': selected_file,
+                                                'selectedFileName': selected_file_name,
+                                                'senses': all_senses,
+                                                'connective_array': all_connectives,
+                                                'file_array': file_array,
+                                                'annotations_array': annotations_array,
+                                                'file_ids': file_ids
+                                                })
+
+####### SEARCH ##############
 
 def compute_total_stats(request):
     senses = ['TEMPORAL', 'CONTINGENCY', 'COMPARISON', 'EXPANSION']
@@ -428,92 +529,6 @@ def compute_files_stats(request):
         file_stats[file.id] = stats
 
     return HttpResponse(json.dumps(file_stats))
-
-
-# ONLOAD
-def search_page_rest(request):
-    documents = uploaded_files.objects.filter()
-
-    if request.method == 'GET' and 'reset' in request.GET:
-        file_array = uploaded_files.objects.all()
-
-        all_results = dict()
-
-        for file in file_array:
-            annotation_list = dict()
-            selected_file_name = file.filename
-            annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
-            result = dict()
-            result['text'] = file.raw_file.read()
-            for a in annotations:
-                annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
-            result['annotation_list'] = annotation_list
-            all_results[file.id] = result
-
-        return HttpResponse(json.dumps(all_results))
-
-    if request.method == 'POST':
-        return redirect('upload_annotations.html')
-
-    # ON LOAD
-
-    file_array = uploaded_files.objects.all()
-
-    annotations_array = {}
-    annotations_dict = {}
-    file_ids = []
-
-    all_senses = list()
-    all_connectives = {}
-
-    for file in file_array:
-        selected_file_name = file.filename
-        file_ids.append(file.id)
-        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
-        annotations_dict[selected_file_name] = annotations_array[file.id]
-        senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
-                                                                               'sense2').distinct()
-        sense_array = prepareSenseList(senses)
-        all_senses.extend(sense_array)
-
-        connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
-            'conn', 'conn2',
-            'type').distinct()
-        connective_array = prepareConnList(connectives)
-        all_connectives.update(connective_array)
-
-    all_senses = set(all_senses)
-    all_senses = list(all_senses)
-    all_senses.sort()
-
-    all_connectives = collections.OrderedDict(all_connectives)
-
-    request.session['search_results'] = annotations_dict
-
-    first = uploaded_files.objects.filter().first()
-    selected_file_name = first.filename
-    selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
-    annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
-    senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
-                                                                           'sense2').distinct()
-    connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
-        'conn', 'conn2',
-        'type').distinct()
-    connective_array = prepareConnList(connectives)
-
-    sense_array = prepareSenseList(senses)
-    return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
-                                                'selectedFile': selected_file,
-                                                'selectedFileName': selected_file_name,
-                                                'senses': all_senses,
-                                                'connective_array': all_connectives,
-                                                'file_array': file_array,
-                                                'annotations_array': annotations_array,
-                                                'file_ids': file_ids
-                                                })
-
-
-####### SEARCH ##############
 
 '''
 ## DOWNLOAD
