@@ -182,6 +182,12 @@
                     $("#dimlex_div").html(dimlex_info);
                     */
                     // document.getElementById("json").innerHTML = JSON.stringify(data, undefined, 2);
+
+                    if (jQuery.isEmptyObject(data)) {
+                        $("#dimlex_div").html(null);
+                        alert('No information found in Dimlex for ' + $("#conn-select").val());
+                    }
+
                     var rel_type = "";
                     var dimlex_info = "";
                     for (var key in data) {
