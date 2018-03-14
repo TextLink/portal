@@ -46,7 +46,7 @@
                 var content = data["text"];
 
                 content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#first_language').find("#txt").html(JSON.stringify(content));
+                $('#first_language').find("#txt").html(content);
 
                 // fill ANNOTATION SELECT
                 var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>";
@@ -166,7 +166,9 @@
             },
             error: function () {
                var text = stripHtml( $('#second_language').find("#txt").text());
-               $('#second_language').find("#txt").val(text);
+               content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+
+               $('#second_language').find("#txt").html(content);
                 alert('This annotation does not have a counterpart in English!');
             },
         });
@@ -306,7 +308,7 @@
                     annotation_list += '</select>';
                     $('#first_language').find('#info').text(count - 1 + " relations have been found.");
                     $('#first_language').find('#annotation-select').html(annotation_list);
-                    $('#first_language').find("#txt").html(JSON.stringify(content));
+                    $('#first_language').find("#txt").html(content);
 
 
                     var english_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
