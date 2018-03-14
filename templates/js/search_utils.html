@@ -38,12 +38,14 @@
                     content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                     var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
-                    $.each(annotation_list, function (key, value) {
-                        if (key.indexOf("text") < 0) {
-                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                    for (var item in annotation_list) {
+                        var res = annotation_list[item];
+                        var split_res = res.split("#");
+                        if (split_res[1].indexOf("text") < 0) {
+                            annotation_data += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
                             count += 1;
                         }
-                    });
+                    }
                     annotation_data += '</select>';
                     var info = '#info_' + key;
                     $(info).text(count - 1 + " relations have been found.");
@@ -68,11 +70,9 @@
         $('#MS').attr('checked', false); // Checks it
         $('p').hide();
         $("#select-operator").hide();
-        $("#keyword").val('').trigger("");
+        $("#keyword-arg1-select").val('').trigger('chosen:updated');
+        $("#keyword-arg2-select").val('').trigger('chosen:updated');
         $("input:checkbox[name=discourse_type]:checked").each(function () {
-            $(this).prop('checked', false);
-        });
-        $("input:checkbox[name=arg]:checked").each(function () {
             $(this).prop('checked', false);
         });
         $("#dimlex_div").html(null);
@@ -133,18 +133,12 @@
             ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
         }
 
-        if ($("#keyword").val() !== null && $("#keyword").val() !== "") {
-            ajax_url = ajax_url + '&keyword=' + $("#keyword").val();
+        if ($("#keyword-arg1-select").val() !== null) {
+            ajax_url = ajax_url + '&keyword-arg1=' + $("#keyword-arg1-select").val();
+        }
 
-            if ($("#keyword-search input:checkbox:checked").length > 0) {
-                ajax_url = ajax_url + '&keyword-arg=';
-            } else {
-                alert("Please select argument span for keyword search!");
-            }
-
-            $("input:checkbox[name=arg]:checked").each(function () {
-                ajax_url = ajax_url + $(this).val() + ",";
-            });
+        if ($("#keyword-arg2-select").val() !== null) {
+            ajax_url = ajax_url + '&keyword-arg2=' + $("#keyword-arg2-select").val();
         }
 
         $.ajax({
@@ -161,12 +155,14 @@
                     content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                     var annotation_data = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
-                    $.each(annotation_list, function (key, value) {
-                        if (key.indexOf("text") < 0) {
-                            annotation_data += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                    for (var item in annotation_list) {
+                        var res = annotation_list[item];
+                        var split_res = res.split("#");
+                        if (split_res[1].indexOf("text") < 0) {
+                            annotation_data += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
                             count += 1;
                         }
-                    });
+                    }
                     annotation_data += '</select>';
                     var info = '#info_' + key;
                     $(info).text(count - 1 + " relations have been found.");

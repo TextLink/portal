@@ -233,3 +233,22 @@ def prepareConnList(connectives):
 
     sorted_array = collections.OrderedDict(sorted(conn_array.items()))
     return sorted_array
+
+
+def prepareKeyword(keyword):
+    keyword_list = []
+    keyword_list.append(' ' + keyword + '')
+    keyword_list.append(' ' + keyword + ' ')
+    keyword_list.append('.' + keyword + ' ')
+    keyword_list.append(',' + keyword + ' ')
+    keyword_list.append('?' + keyword + ' ')
+    keyword_list.append('!' + keyword + ' ')
+    keyword_list.append(';' + keyword + ' ')
+    keyword_list.append(':' + keyword + ' ')
+    keyword_list.append(' ' + keyword + '.')
+    keyword_list.append(' ' + keyword + ',')
+    keyword_list.append(' ' + keyword + '?')
+    keyword_list.append(' ' + keyword + '!')
+    keyword_list.append(' ' + keyword + ';')
+    keyword_list.append(' ' + keyword + ':')
+    return keyword_list

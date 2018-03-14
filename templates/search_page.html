@@ -273,7 +273,10 @@
         width: 100%;
         text-align: center;
     }
-    select[disabled] { background-color: dimgrey; }
+
+    select[disabled] {
+        background-color: dimgrey;
+    }
 
 
 </style>
@@ -290,7 +293,7 @@
 </head>
 <body>
 <div class="fixed-navbar2">
-        <img src="{% static "img/logo_textlink.png" %}" style="float: left; padding-left: 10px"/>
+    <img src="{% static "img/logo_textlink.png" %}" style="float: left; padding-left: 10px"/>
 </div>
 <div class="fixed-navbar">
     <a href="http://localhost:8000/upload_annotations">Home</a>
@@ -393,12 +396,22 @@
         <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
 
-    <form id="keyword-search">
-        Search Keyword:<br>
-        <input id="keyword" type="text" name="keyword" placeholder="Arg-1">
-        <input id="keyword" type="text" name="keyword" placeholder="Arg-2">
-    </form>
+    Search Keyword:<br>
+    <select name='keyword-arg1-list[]' id='keyword-arg1-select' data-placeholder='Arg-1' multiple class='chosen-select'
+            tabindex='11'>
+        {% for keyword in keyword_arg1 %}
+            <option value="{{ keyword }} "> {{ keyword }} </option>
+        {% endfor %}
+    </select>
 
+    <select name='keyword-arg2-list[]' id='keyword-arg2-select' data-placeholder='Arg-2' multiple class='chosen-select'
+            tabindex='11'>
+        {% for keyword in keyword_arg2 %}
+            <option value="{{ keyword }} "> {{ keyword }} </option>
+        {% endfor %}
+    </select>
+    <br>
+   <br>
     <button class="button" name="search-button">Search</button>
     <button name="reset">Reset</button>
     <br>

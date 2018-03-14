@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.utils.crypto import get_random_string
 import json
 from django.utils.encoding import smart_unicode
+import re
 
 
 def upload_annotations(request):
@@ -266,8 +267,8 @@ def search_sense_rest(request):
     for file in file_array:
         selected_file_name = file.filename
         content = file.raw_file.read()
-        annotation_list = dict()
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
+        annotation_list = []
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('connBeg')
         # SENSE1, !SENSE2
         if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
             selected_senses = request.GET['sense'].replace(" ", "")
@@ -313,19 +314,20 @@ def search_sense_rest(request):
             annotations = annotations.filter(
                 reduce(operator.or_, (Q(type=t) for t in selected_types)))
 
-        if request.method == 'GET' and 'file' in request.GET and "keyword" in request.GET and "keyword-arg" in request.GET:
-            keyword = request.GET['keyword']
-            keyword_args = request.GET['keyword-arg'].split(',')
-            if ("arg1" in keyword_args and "arg2" in keyword_args):
-                annotations = annotations.filter(Q(arg1__contains=keyword) | Q(arg12__contains=keyword)
-                                                 | Q(arg2__contains=keyword) | Q(arg22__contains=keyword))
-            elif ("arg1" in keyword_args):
-                annotations = annotations.filter(Q(arg1__contains=keyword) | Q(arg12__contains=keyword))
-            else:
-                annotations = annotations.filter(Q(arg2__contains=keyword) | Q(arg22__contains=keyword))
+        if request.method == 'GET' and 'file' in request.GET and "keyword-arg1" in request.GET:
+            keyword = request.GET['keyword-arg1']
+            keyword_list = prepareKeyword(keyword)
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(arg1__contains=k) for k in keyword_list)))
+
+        if request.method == 'GET' and 'file' in request.GET and "keyword-arg2" in request.GET:
+            keyword = request.GET['keyword-arg2']
+            keyword_list = prepareKeyword(keyword)
+            annotations = annotations.filter(
+                reduce(operator.or_, (Q(arg2__contains=k) for k in keyword_list)))
 
         for a in annotations:
-            annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+            annotation_list.append(a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
         result = dict()
         result['text'] = content
         result['annotation_list'] = annotation_list
@@ -351,15 +353,15 @@ def search_page_rest(request):
         file_ids = []
 
         for file in file_array:
-            annotation_list = dict()
+            annotation_list = []
             selected_file_name = file.filename
             file_ids.append(file.id)
-            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
             annotations_dict[selected_file_name] = annotations_array[file.id]
             result = dict()
             result['text'] = file.raw_file.read()
             for a in annotations_array[file.id]:
-                annotation_list[a.id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                annotation_list.append(a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
             result['annotation_list'] = annotation_list
             all_results[file.id] = result
 
@@ -380,10 +382,13 @@ def search_page_rest(request):
     all_senses = list()
     all_connectives = {}
 
+    keyword_arg1 = []
+    keyword_arg2 = []
+
     for file in file_array:
         selected_file_name = file.filename
         file_ids.append(file.id)
-        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name)
+        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
         annotations_dict[selected_file_name] = annotations_array[file.id]
         senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
                                                                                'sense2').distinct()
@@ -396,9 +401,29 @@ def search_page_rest(request):
         connective_array = prepareConnList(connectives)
         all_connectives.update(connective_array)
 
+        arg1 = pdtbAnnotation.objects.filter(file=selected_file_name).values('arg1',
+                                                                             'arg12').distinct()
+        for arg in arg1:
+            if arg['arg1'] != 'none': keyword_arg1.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg1']))
+            if arg['arg12'] != 'none': keyword_arg1.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg12']))
+
+        arg2 = pdtbAnnotation.objects.filter(file=selected_file_name).values('arg2',
+                                                                             'arg22').distinct()
+        for arg in arg2:
+            if arg['arg2'] != 'none': keyword_arg2.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg2']))
+            if arg['arg22'] != 'none': keyword_arg2.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg22']))
+
     all_senses = set(all_senses)
     all_senses = list(all_senses)
     all_senses.sort()
+
+    keyword_arg1 = set(keyword_arg1)
+    keyword_arg1 = list(keyword_arg1)
+    keyword_arg1.sort()
+
+    keyword_arg2 = set(keyword_arg2)
+    keyword_arg2 = list(keyword_arg2)
+    keyword_arg2.sort()
 
     all_connectives = collections.OrderedDict(all_connectives)
 
@@ -408,14 +433,7 @@ def search_page_rest(request):
     selected_file_name = first.filename
     selected_file = uploaded_files.objects.filter(filename=selected_file_name).first()
     annotations = pdtbAnnotation.objects.filter(file=selected_file_name)
-    senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
-                                                                           'sense2').distinct()
-    connectives = pdtbAnnotation.objects.filter(file=selected_file_name).values(
-        'conn', 'conn2',
-        'type').distinct()
-    connective_array = prepareConnList(connectives)
 
-    sense_array = prepareSenseList(senses)
     return render(request, 'search_page.html', {'documents': documents, 'annotations': annotations,
                                                 'selectedFile': selected_file,
                                                 'selectedFileName': selected_file_name,
@@ -423,7 +441,9 @@ def search_page_rest(request):
                                                 'connective_array': all_connectives,
                                                 'file_array': file_array,
                                                 'annotations_array': annotations_array,
-                                                'file_ids': file_ids
+                                                'file_ids': file_ids,
+                                                'keyword_arg1': keyword_arg1,
+                                                'keyword_arg2': keyword_arg2
                                                 })
 
 
