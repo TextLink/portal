@@ -226,10 +226,10 @@ def prepareConnList(connectives):
     for c in connectives:
         if (c['type'].lower() != 'Explicit'.lower()) and (c['type'].lower() != 'AltLex'.lower()):
             continue
-        elif c['conn2'].lower() != 'none':
-            conn_array[c['conn'] + " " + c['conn2']] = " (" + c['type'] + ")"
+     #   elif c['conn2'].lower() != 'none':
+            #       conn_array[c['conn'] + " " + c['conn2']] = c['conn'] + " " + c['conn2'] + "(" + c['type'] + ")"
         else:
-            conn_array[c['conn']] = " (" + c['type'] + ")"
+            conn_array[c['conn']] = c['conn'] + "(" + c['type'] + ")"
 
     sorted_array = collections.OrderedDict(sorted(conn_array.items()))
     return sorted_array

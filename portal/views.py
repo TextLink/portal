@@ -107,20 +107,19 @@ def ted_mdb(request):
         selected_file_name = request.GET['file']
         selected_file = ted_mdb_files.objects.filter(filename=selected_file_name).first()
         content = selected_file.raw_file
-        annotations = ted_mdb_annotation.objects.filter(file=selected_file_name)
+        annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
         annotation_list = dict()
+
         for a in annotations:
             annotation_list[a.ann_id] = a.conn + "(" + a.type + ") |" + a.sense1 + "|" + a.sense2
-
-        connective_list = dict()
-        connectives = ted_mdb_annotation.objects.filter(Q(type="Explicit") | Q(type="AltLex"),
-                                                        file=selected_file_name).order_by('conn').distinct()
-        for c in connectives:
-            connective_list[c.conn] = c.conn + "(" + c.type + ")"
+        annotation_list = collections.OrderedDict(sorted(annotation_list.items()))
+        connectives = ted_mdb_annotation.objects.filter(file=selected_file_name).values('conn', 'conn2',
+                                                                                        'type').order_by('conn').distinct()
+        connective_array = prepareConnList(connectives)
 
         result = dict()
         result['annotation_list'] = annotation_list
-        result['connective_list'] = connective_list
+        result['connective_list'] = connective_array
         result['text'] = content
 
         if '2150' in request.GET['file']:
@@ -139,7 +138,7 @@ def ted_mdb(request):
         return HttpResponse(json.dumps(result))
 
     # ON LOAD
-    all_languages = ted_mdb_files.objects.values('language').distinct()
+    all_languages = ted_mdb_files.objects.values('language').filter(~Q(language="English")).distinct()
     first_doc = ted_mdb_files.objects.filter(language=all_languages.first()['language']).first()
     selected_language = first_doc.language
 
@@ -151,7 +150,7 @@ def ted_mdb(request):
     selected_file_content = first_doc.raw_file
     documents = ted_mdb_files.objects.filter(language=selected_language)
 
-    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name)
+    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
     senses = ted_mdb_annotation.objects.filter(file=selected_file_name).values('sense1', 'sense2').distinct()
     connectives = ted_mdb_annotation.objects.filter(file=selected_file_name).values('conn', 'conn2', 'type').distinct()
     connective_array = prepareConnList(connectives)
@@ -167,7 +166,8 @@ def ted_mdb(request):
     eng_text = ted_mdb_files.objects.filter(filename=selected_eng_file_name).first().raw_file
 
     return render(request, 'ted_mdb.html', {'all_languages': all_languages,
-                                            'documents': documents, 'annotations': annotations,
+                                            'documents': documents,
+                                            'annotations': annotations,
                                             'selected_file_content': selected_file_content,
                                             'selectedFileName': selected_file_name,
                                             'senses': sense_array,
@@ -183,7 +183,7 @@ def ted_mdb_rest(request):
     content = selected_file.raw_file
     annotation_list = dict()
     annotation_list["text"] = content  # change return object
-    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name)
+    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by("connBeg")
     english_annotation_set = dict()
 
     if '2150' in request.GET['file']:
@@ -209,7 +209,7 @@ def ted_mdb_rest(request):
             reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
     # CONN
     if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
-        selected_connectives = request.GET['connective'].replace(" ", "")
+        selected_connectives = request.GET['connective']
         selected_connectives = selected_connectives.split(',')
         annotations = annotations.filter(
             reduce(operator.or_, (Q(conn=c) for c in selected_connectives)))
@@ -228,24 +228,23 @@ def ted_mdb_rest(request):
             reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
             reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
             file=selected_eng_file_name)
-
-        source_equivalent_ids = ted_mdb_alignment.objects.filter(
-            reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
-        annotations = ted_mdb_annotation.objects.filter(
-            reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
-            file=selected_file_name)
-
-        english_annotation_set = dict()
-        for a in eng_annotation:
-            english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+        if(len(eng_annotation) > 0):
+            source_equivalent_ids = ted_mdb_alignment.objects.filter(
+                reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
+            annotations = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
+                file=selected_file_name)
+            for a in eng_annotation:
+                english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
     else:
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
             reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
-        eng_annotation = ted_mdb_annotation.objects.filter(
-            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
-            file=selected_eng_file_name)
-        for a in eng_annotation:
-            english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+        if(len(eng_equivalent_ids) > 0):
+            eng_annotation = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
+                file=selected_eng_file_name)
+            for a in eng_annotation:
+                english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
 
     for a in annotations:
         annotation_list[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2

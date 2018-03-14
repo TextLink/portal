@@ -18,7 +18,7 @@
 
     function resetWithoutFileLoad()
     {
-         $("[name='sense1List[]").val('').trigger('chosen:updated');
+        $("[name='sense1List[]").val('').trigger('chosen:updated');
         $("[name='sense2List[]").val('').trigger('chosen:updated');
         $("#conn-select").val('').trigger('chosen:updated');
 
@@ -111,12 +111,6 @@
 
     function languageLoad() {
 
-        if ($("#language-select").val().trim() == "English") {
-            $("#second-language-select").show();
-        }
-        else {
-            $("#second-language-select").hide();
-        }
         $.ajax({
             url: 'http://localhost:8000/ted_mdb?language=' + $("#language-select").val(),
             type: 'GET',
@@ -171,11 +165,20 @@
                 $('#second_language').find('#annotation-select').change();
             },
             error: function () {
+               var text = stripHtml( $('#second_language').find("#txt").text());
+               $('#second_language').find("#txt").val(text);
                 alert('This annotation does not have a counterpart in English!');
             },
         });
     }
-
+    function stripHtml(html){
+        // Create a new div element
+        var temporalDivElement = document.createElement("div");
+        // Set the HTML content with the providen
+        temporalDivElement.innerHTML = html;
+        // Retrieve the text property of the element (cross-browser support)
+        return temporalDivElement.textContent || temporalDivElement.innerText || "";
+    }
     function autoScroll() {
         if ($('#second_language').find('#annotation-select').length) {
             $('#second_language').find('#annotation-select').focus().find(":selected")[0].scrollIntoView();
@@ -229,6 +232,7 @@
 
     $(document).ready(function () {
         $("#file-select").change(fileLoad);
+        fileLoad(); // düzelt, chosen hatası
         $("#language-select").change(languageLoad);
         $("#second-language-select").change(secondLanguageLoad);
 
@@ -236,7 +240,6 @@
         $('#second_language').find('#annotation-select').on('change', annotationList2Change);
 
         $("[name='reset']").click(reset);
-
 
         //sense search
         $("[name='search-button']").click(function () {
@@ -250,7 +253,14 @@
                 ajax_url = ajax_url + '&op=' + $("[name='operator']").val();
             }
             if ($("#conn-select").val() !== null) {
-                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+
+                var selected_con = $("#conn-select").find('option:selected').text();
+                selected_con = selected_con.substring(0, selected_con.indexOf("("));
+
+                //ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+                ajax_url = ajax_url + '&connective=' + selected_con;
+
+
             }
             if ($("#checkbox-form input:checkbox:checked").length > 0) {
                 ajax_url = ajax_url + '&type=';
@@ -276,8 +286,14 @@
                 dataType: 'json',
                 success: function (data) {
                     var content = data["text"];
-
                     var annotation_data = data["annotation_list"]
+                    var english_annotation_data = data["eng_annotation_list"]
+
+                    if(Object.keys(english_annotation_data).length == 0)
+                    {
+                        alert("There is not any such relation pair.")
+                    }
+
                     content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                     var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
@@ -293,7 +309,6 @@
                     $('#first_language').find("#txt").html(JSON.stringify(content));
 
 
-                    var english_annotation_data = data["eng_annotation_list"]
                     var english_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
                     $.each(english_annotation_data, function (key, value) {
@@ -308,7 +323,7 @@
 
                 },
                 error: function () {
-                    alert('Failed!');
+                    alert('No such DR could be found!');
                 },
             });
             // DIMLEX AJAX REQUEST
@@ -343,8 +358,7 @@
             }
             // DIMLEX AJAX REQUEST
         });
-    })
-    ;
+    });
 </script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
@@ -353,8 +367,8 @@
 <script type='text/javascript'>
     window.onload = function () {
         $(".chosen-select").chosen({
-                            width: '250px',
-                no_results_text: "Oops, nothing found!"
+            width: '250px',
+            no_results_text: "Oops, nothing found!",
             }
         );
         $('p').hide();
