@@ -110,7 +110,7 @@ def ted_mdb(request):
         annotations = ted_mdb_annotation.objects.filter(file=selected_file_name)
         annotation_list = dict()
         for a in annotations:
-            annotation_list[a.ann_id] = a.conn + "(" + a.type + ")"
+            annotation_list[a.ann_id] = a.conn + "(" + a.type + ") |" + a.sense1 + "|" + a.sense2
 
         connective_list = dict()
         connectives = ted_mdb_annotation.objects.filter(Q(type="Explicit") | Q(type="AltLex"),
@@ -132,7 +132,7 @@ def ted_mdb(request):
         eng_annotations = ted_mdb_annotation.objects.filter(file=selected_eng_file_name)
         eng_annotation_list = dict()
         for a in eng_annotations:
-            eng_annotation_list[a.ann_id] = a.conn + "(" + a.type + ")"
+            eng_annotation_list[a.ann_id] = a.conn + "(" + a.type + ") |" + a.sense1 + "|" + a.sense2
 
         result['eng_annotation_list'] = eng_annotation_list
         result['eng_text'] = eng_content
@@ -236,6 +236,14 @@ def ted_mdb_rest(request):
             file=selected_file_name)
 
         english_annotation_set = dict()
+        for a in eng_annotation:
+            english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+    else:
+        eng_equivalent_ids = ted_mdb_alignment.objects.filter(
+            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
+        eng_annotation = ted_mdb_annotation.objects.filter(
+            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
+            file=selected_eng_file_name)
         for a in eng_annotation:
             english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
 
