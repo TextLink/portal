@@ -52,10 +52,10 @@ class ted_mdb_files(models.Model):
 
 
 class ted_mdb_annotation(models.Model):
-    ann_id = models.CharField(max_length=30, null=False)
-    type = models.CharField(max_length=30, null=False)
-    conn = models.CharField(max_length=30, null=True)
-    conn2 = models.CharField(max_length=30, null=True)
+    ann_id = models.CharField(max_length=300, null=False)
+    type = models.CharField(max_length=300, null=False)
+    conn = models.CharField(max_length=300, null=True)
+    conn2 = models.CharField(max_length=300, null=True)
     connBeg = models.IntegerField(null=True)
     connEnd = models.IntegerField(null=True)
     connBeg2 = models.IntegerField(null=True)
@@ -73,7 +73,7 @@ class ted_mdb_annotation(models.Model):
     arg1Beg2 = models.IntegerField(null=True)
     arg1End2 = models.IntegerField(null=True)
     # arg2
-    arg2 = models.CharField(max_length=50000)
+    arg2 = models.CharField(max_length=5000)
     arg22 = models.TextField(null=True)
     arg2Beg = models.IntegerField()
     arg2End = models.IntegerField()
