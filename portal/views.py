@@ -55,6 +55,7 @@ def upload_annotations(request):
 
 
 def highlight_rest(request):
+
     if request.method == 'GET' and 'annotation' in request.GET:
         annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('connBeg', 'connEnd',
                                                                                         'connBeg2', 'connEnd2',
@@ -63,8 +64,6 @@ def highlight_rest(request):
                                                                                         'arg2Beg', 'arg2End',
                                                                                         'arg2Beg2', 'arg2End2',
                                                                                         'file')[0]
-        #    text = smart_unicode(uploaded_files.objects.filter(filename=annotation['file'])[0].raw_file.read()).replace(
-        #        "\n", "")
 
         ann_tool = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('annotation_tool')[0]
 
@@ -79,7 +78,7 @@ def highlight_rest(request):
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \
-            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation']).values('connBeg', 'connEnd',
+            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation'], file__contains=request.GET['file']).values('connBeg', 'connEnd',
                                                                                                'connBeg2', 'connEnd2',
                                                                                                'arg1Beg', 'arg1End',
                                                                                                'arg1Beg2', 'arg1End2',
@@ -90,7 +89,6 @@ def highlight_rest(request):
 
     text = update_html(text, annotation)
     return HttpResponse(text)
-
 
 ####### TED - MDB  #######
 
@@ -268,11 +266,13 @@ def ted_mdb_get_aligned(request):
                 selected_eng_file_name = "talk_2150_en.txt"
             else:
                 selected_eng_file_name = "talk_2009_en.txt"
-            eng_annotation = ted_mdb_annotation.objects.filter(ann_id=eng_eq.values('fl_id').first()['fl_id'],
+            eng_annotation_list = ted_mdb_annotation.objects.filter(reduce(operator.or_, (Q(ann_id=id.fl_id) for id in eng_eq)),
                                                                file=selected_eng_file_name)
             result = dict()
-            result[eng_annotation[0].ann_id] = eng_annotation[0].conn + "(" + eng_annotation[0].type + ")" \
-                                               + " | " + eng_annotation[0].sense1 + " | " + eng_annotation[0].sense2
+
+            for eng_annotation in eng_annotation_list:
+                result[eng_annotation.ann_id] = eng_annotation.conn + "(" + eng_annotation.type + ")" \
+                                               + " | " + eng_annotation.sense1 + " | " + eng_annotation.sense2
 
             return HttpResponse(json.dumps(result))
         except:

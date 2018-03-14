@@ -81,7 +81,7 @@
                 });
                 eng_annotation_list += '</select>';
                 eng_content = eng_content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#second_language').find("#txt").html(JSON.stringify(eng_content));
+                $('#second_language').find("#txt").html(eng_content);
                 $('#second_language').find('#annotation-select').html(eng_annotation_list);
                 $('#second_language').find('#info').text(count - 1 + " relations have been found.");
 
@@ -149,6 +149,23 @@
         });
     }
 
+
+    function setSelect() {
+    var desiredOption = $("#selectVal").val();
+    if (desiredOption == '') {
+        $("#selectVal").focus();
+        return false;
+    }
+    var hasOption = $('#mySelect option[value="' + desiredOption + '"]');
+    if (hasOption.length == 0) {
+        alert('No such option');
+    } else {
+        $('#mySelect').val(desiredOption);
+    }
+    $("#selectVal").select();
+}
+
+
     function findAligned() {
         $.ajax({
             url: 'http://localhost:8000/ted_mdb_get_aligned?annotation=' + $('#first_language').find('#annotation-select').val() + "&" + "file=" + $("#file-select").val(),
@@ -158,15 +175,14 @@
             success: function (data) {
                 var eng_key = ""
                 $.each(data, function (key, value) {
-                    eng_key = key
+                            eng_key = key;
                 });
                 $('#second_language').find('#annotation-select').val(eng_key);
-
                 $('#second_language').find('#annotation-select').change();
             },
             error: function () {
                var text = stripHtml( $('#second_language').find("#txt").text());
-               content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+              content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
 
                $('#second_language').find("#txt").html(content);
                 alert('This annotation does not have a counterpart in English!');
@@ -188,8 +204,10 @@
     }
 
     function highlight() {
+
+        var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val(),
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val()+"&file="+file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
@@ -205,16 +223,17 @@
     }
 
     function highlightSecond() {
+                var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
+
 
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val(),
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val()+"&file="+file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
                 $('#second_language').find("#txt").html(data);
                 $('#second_language').find("#txt").getElementById("anno").scrollIntoView();
-
             },
             error: function () {
                 alert(' highlight2 Failed!');
