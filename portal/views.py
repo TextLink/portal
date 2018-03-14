@@ -184,6 +184,13 @@ def ted_mdb_rest(request):
     annotation_list = dict()
     annotation_list["text"] = content  # change return object
     annotations = ted_mdb_annotation.objects.filter(file=selected_file_name)
+    english_annotation_set = dict()
+
+    if '2150' in request.GET['file']:
+        selected_eng_file_name = "talk_2150_en.txt"
+    else:
+        selected_eng_file_name = "talk_2009_en.txt"
+
     # SENSE1, !SENSE2
     if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
         selected_senses = request.GET['sense'].replace(" ", "")
@@ -213,18 +220,33 @@ def ted_mdb_rest(request):
         annotations = annotations.filter(
             reduce(operator.or_, (Q(type=t) for t in selected_types)))
 
-    if '2150' in request.GET['file']:
-        selected_eng_file_name = "talk_2150_en.txt"
-    else:
-        selected_eng_file_name = "talk_2009_en.txt"
+    if request.method == 'GET' and 'targetType' in request.GET:
+        selected_target_types = request.GET['targetType'].split(',');
+        eng_equivalent_ids = ted_mdb_alignment.objects.filter(
+            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)),sl_file=request.GET['file'])
+        eng_annotation = ted_mdb_annotation.objects.filter(
+            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
+            reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
+            file=selected_eng_file_name)
+
+        source_equivalent_ids = ted_mdb_alignment.objects.filter(
+            reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
+        annotations = ted_mdb_annotation.objects.filter(
+            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in source_equivalent_ids)),
+            file=selected_file_name)
+
+        english_annotation_set = dict()
+        for a in eng_annotation:
+            english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+
     for a in annotations:
         annotation_list[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
-
     result = dict()
     result['text'] = content
     result['annotation_list'] = annotation_list
+    result['eng_annotation_list'] = english_annotation_set
 
-    return HttpResponse(json.dumps(annotation_list))
+    return HttpResponse(json.dumps(result))
 
 
 ####### ALIGNMENT  #######
@@ -233,7 +255,6 @@ def ted_mdb_get_aligned(request):
     if request.method == 'GET' and 'annotation' in request.GET and 'file' in request.GET:
         annotation_id = request.GET['annotation']
         file_name = request.GET['file']
-
         try:
             eng_eq = ted_mdb_alignment.objects.filter(sl_id=annotation_id, sl_file=file_name)
             if '2150' in file_name:

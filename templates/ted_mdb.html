@@ -208,9 +208,8 @@
     }
 
 
-    .search-options-target {
-                height: 200px;
-
+    #search-options-target {
+       height: 200px;
        float:left;
         width:50%;
         overflow:hidden;
@@ -336,44 +335,19 @@ File:
         <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
         <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
-{% comment %}
-    <div class="Multiple-Language-Search">
-        <input type="checkbox" id="MLS" name="MLS" value="1">
-        Multiple Language Search
-        <input type="hidden" id="MLS" name="MLS" value="0"/>
-    </div>
-    {% endcomment %}
+
 </div>
 
 
-<t>
-<div class="search-options-target">
-    Select Sense in Target Language:
-<br>
-    <div class="teset">
-        <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
-                class='chosen-select'
-                tabindex='11'>
-            {% for sense in senses %}
-                {% if '.' not in sense %}
-                    </optgroup>
-                    <optgroup label="{{ sense }} ">
-                {% endif %}
-                <option value="{{ sense }} ">{{ sense }} </option>
-            {% endfor %}
-        </select>
-    </div>
+<div id="search-options-target">
 
-    <br>
-    <br>
-    <form class="alert alert-info" id="checkbox-form">
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
+    <form   id="target-checkbox-form">
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
 </div>
-</t>
     <button class="button" name="search-button">Search</button>
     <button name="reset">Reset</button>
 </div>
