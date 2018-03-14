@@ -593,7 +593,7 @@ def download_excel(request):
     filename = request.GET['filename']
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
+    response['Content-Disposition'] = 'attachment; filename=' + filename + '(excel).csv'
     writer = csv.writer(response)
     # name = pdtbAnnotation._name_
     # Write headers to CSV file
@@ -638,7 +638,7 @@ def download_excel(request):
 
 def download_all(request):
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=all_files.csv'
+    response['Content-Disposition'] = 'attachment; filename=all_files(excel).csv'
     writer = csv.writer(response)
     # name = pdtbAnnotation._name_
     # Write headers to CSV file
@@ -686,11 +686,13 @@ def download_all(request):
 
 
 def download_pdtb(request):
+    filename = request.GET['filename']
+
     response = HttpResponse(content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename=search_results(pdtb).txt'
+    response['Content-Disposition'] = 'attachment; filename=' + filename + '(pdtb).txt'
 
     types = ["Explicit", "Implicit", "EntRel", "AltLex", "NoRel"]
-    for obj in request.session['search_results']:
+    for obj in request.session['search_results'][filename]:
         line = ""
         if str(obj.type) == types[0] or str(obj.type) == types[3]:
             line = str(obj.type) + "|" + handleDiscontniousSpan(obj.connBeg, obj.connEnd, obj.connBeg2,
