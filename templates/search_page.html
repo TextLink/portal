@@ -281,6 +281,8 @@
 <html lang="en">
 {% include 'js/search_utils.html' %}
 
+{% load static %}
+
 <head>
     <title>Search Annotations</title>
     <meta charset="utf-8">
@@ -288,7 +290,7 @@
 </head>
 <body>
 <div class="fixed-navbar2">
-    <h2>TextLink Web Portal</h2>
+        <img src="{% static "img/logo_textlink.png" %}" style="float: left; padding-left: 10px"/>
 </div>
 <div class="fixed-navbar">
     <a href="http://localhost:8000/upload_annotations">Home</a>
@@ -554,7 +556,7 @@
         <div id="sense_select" class="statsection">
             Selected Sense:
             <br>
-            <select id='total-sense-select' name='sense-select' method="get">
+            <select id='total-sense-select' name='sense-select' method="get" disabled>
                 <option value="ALL" selected>ALL</option>
                 <option value="TEMPORAL">TEMPORAL</option>
                 <option value="CONTINGENCY">CONTINGENCY</option>

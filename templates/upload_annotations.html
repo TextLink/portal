@@ -40,11 +40,18 @@
         padding: 20px 50px;
     }
 
+    .main-logo img {
+        width: 100%;
+    }
+
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
 
 {% include 'js/search_utils.html' %}
+
+{% load static %}
 
 <head>
     <title>Home</title>
@@ -53,7 +60,7 @@
 </head>
 
 <div class="fixed-navbar2">
-    <h2>TextLink Web Portal</h2>
+    <img src="{% static "img/logo_textlink.png" %}" style="float: left; padding-left: 10px"/>
 </div>
 
 <div class="fixed-navbar">
@@ -87,6 +94,9 @@
     the enterprise. This web portal contributes to achieving a prime objective of TextLink, that of coordinating the
     identification and development of monolingual and parallel corpora that have been enriched and made inter-operable
     and co-searchable through the annotation of discourse-relational devices (DRDs).
+    <br>
+    <br>
+    <!--  <img src="{% static "img/map.png" %}" style="width: 60%"/> -->
 </div>
 
 <div class="main2">
@@ -104,6 +114,8 @@
             {% csrf_token %}
             {{ form.as_ul }}
             <br>
+            <li><b>Annotation Tool:</b></li>
+
             <input type="radio" name="annotation_tool" value="pdtb"> PDTB Annotator
             <input type="radio" name="annotation_tool" value="datt"> DATT
             <br>

@@ -222,7 +222,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {% include 'js/ted_mdb_utils.html' %}
-
+{% load static %}
 <head>
     <title>TED-MDB Search</title>
     <meta charset="utf-8">
@@ -232,7 +232,7 @@
 </head>
 <body>
 <div class="fixed-navbar2">
-    <h2>TextLink Web Portal</h2>
+    <img src="{% static "img/logo_textlink.png" %}" style="float: left; padding-left: 10px"/>
 </div>
 <div class="fixed-navbar">
     <a href="/upload_annotations">Home</a>

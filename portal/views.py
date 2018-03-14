@@ -462,7 +462,7 @@ def compute_total_stats(request):
             stats['title'] = stats['title'] + ' ' + dis_type + ' Discourse Type'
 
     elif base == 'sense':
-        stats['title'] = 'Discourse Type Distribution According to'
+        stats['title'] = 'Discourse Type Distribution in '
         stats['coloums'] = []
         stats['coloums'].append(['Discourse Types', 'Counts'])
         if sense == 'ALL':
@@ -470,14 +470,14 @@ def compute_total_stats(request):
                 t_count = pdtbAnnotation.objects.filter(type=t).count()
                 stats['coloums'].append([t, t_count])
 
-            stats['title'] = stats['title'] + ' ALL Senses'
+            stats['title'] = stats['title'] + ' ALL Relations'
         else:
             sense_ann = pdtbAnnotation.objects.filter(Q(sense1__icontains=sense) | Q(sense2__icontains=sense))
             for t in types:
                 t_count = sense_ann.filter(type=t).count()
                 stats['coloums'].append([t, t_count])
 
-            stats['title'] = stats['title'] + ' ' + sense + ' Sense'
+            stats['title'] = stats['title'] + ' Relations with ' + sense + ' Sense'
 
     return HttpResponse(json.dumps(stats))
 
@@ -528,7 +528,7 @@ def compute_files_stats(request):
                 stats['title'] = stats['title'] + ' ' + dis_type + ' Discourse Type'
 
         elif base == 'sense':
-            stats['title'] = 'Discourse Type Distribution According to'
+            stats['title'] = 'Discourse Type Distribution in '
             stats['coloums'] = []
             stats['coloums'].append(['Discourse Types', 'Counts'])
             if sense == 'ALL':
@@ -536,14 +536,14 @@ def compute_files_stats(request):
                     t_count = file_ann.filter(type=t).count()
                     stats['coloums'].append([t, t_count])
 
-                stats['title'] = stats['title'] + ' ALL Senses'
+                stats['title'] = stats['title'] + ' ALL Relations'
             else:
                 sense_ann = file_ann.filter(Q(sense1__icontains=sense) | Q(sense2__icontains=sense))
                 for t in types:
                     t_count = sense_ann.filter(type=t).count()
                     stats['coloums'].append([t, t_count])
 
-                stats['title'] = stats['title'] + ' ' + sense + ' Sense'
+                stats['title'] = stats['title'] + ' Relations with ' + sense + ' Sense'
 
         file_stats[file.id] = stats
 

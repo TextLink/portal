@@ -406,7 +406,8 @@
         $("[name='download-pdtb-button']").click(download_pdtb);
         $("[name='download-all-button']").click(download_all);
         $("[name='search-button']").click(senseSearch);
-        $("[name='base-select']").change(disable);
+        $("#file-base-select").change(disable);
+        $("#total-base-select").change(disable);
         $("[name='compute-total-stats']").click(compute_total_stats);
         $("[name='compute-files-stats']").click(compute_files_stats);
         $('.tablinks').each(function () {
