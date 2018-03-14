@@ -65,9 +65,12 @@
         $("[name='sense2List[]").val('').trigger('chosen:updated');
         $("#conn-select").val('').trigger('chosen:updated');
 
-        $('#MS').attr('checked', false); // Checks it
+        $('#MS').attr('checked', false);
         $('p').hide();
         $("#select-operator").hide();
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
         $("input:checkbox[name=discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });

@@ -232,7 +232,7 @@ def ted_mdb_rest(request):
         source_equivalent_ids = ted_mdb_alignment.objects.filter(
             reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
         annotations = ted_mdb_annotation.objects.filter(
-            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in source_equivalent_ids)),
+            reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
             file=selected_file_name)
 
         english_annotation_set = dict()

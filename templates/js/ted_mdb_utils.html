@@ -16,7 +16,25 @@
         $(select_name).val('').trigger('chosen:updated');
     }
 
+    function resetWithoutFileLoad()
+    {
+         $("[name='sense1List[]").val('').trigger('chosen:updated');
+        $("[name='sense2List[]").val('').trigger('chosen:updated');
+        $("#conn-select").val('').trigger('chosen:updated');
+
+        $('#MS').attr('checked', false);
+        $('p').hide();
+        $("#select-operator").hide();
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+        $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+    }
+
     function fileLoad() {
+        resetWithoutFileLoad();
         $.ajax({
             url: 'http://localhost:8000/ted_mdb?file=' + $("#file-select").val(),
             type: 'GET',
@@ -84,6 +102,9 @@
         $('p').hide();
         $("#select-operator").hide();
         $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+        $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });
     }
