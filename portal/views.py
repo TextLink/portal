@@ -56,7 +56,6 @@ def upload_annotations(request):
 
 
 def highlight_rest(request):
-
     if request.method == 'GET' and 'annotation' in request.GET:
         annotation = pdtbAnnotation.objects.filter(id=request.GET['annotation']).values('connBeg', 'connEnd',
                                                                                         'connBeg2', 'connEnd2',
@@ -79,17 +78,19 @@ def highlight_rest(request):
 
     if request.method == 'GET' and 'ted_mdb_annotation' in request.GET:
         annotation = \
-            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation'], file__contains=request.GET['file']).values('connBeg', 'connEnd',
-                                                                                               'connBeg2', 'connEnd2',
-                                                                                               'arg1Beg', 'arg1End',
-                                                                                               'arg1Beg2', 'arg1End2',
-                                                                                               'arg2Beg', 'arg2End',
-                                                                                               'arg2Beg2', 'arg2End2',
-                                                                                               'file')[0]
+            ted_mdb_annotation.objects.filter(ann_id=request.GET['ted_mdb_annotation'],
+                                              file__contains=request.GET['file']).values('connBeg', 'connEnd',
+                                                                                         'connBeg2', 'connEnd2',
+                                                                                         'arg1Beg', 'arg1End',
+                                                                                         'arg1Beg2', 'arg1End2',
+                                                                                         'arg2Beg', 'arg2End',
+                                                                                         'arg2Beg2', 'arg2End2',
+                                                                                         'file')[0]
         text = ted_mdb_files.objects.filter(filename=annotation['file'])[0].raw_file
 
     text = update_html(text, annotation)
     return HttpResponse(text)
+
 
 ####### TED - MDB  #######
 
@@ -110,10 +111,11 @@ def ted_mdb(request):
         annotation_list = dict()
 
         for a in annotations:
-            annotation_list[a.ann_id] = a.conn + "(" + a.type + ") |" + a.sense1 + "|" + a.sense2
+            annotation_list[a.ann_id] = a.conn + " (" + a.type + ") |" + a.sense1 + "|" + a.sense2
         annotation_list = collections.OrderedDict(sorted(annotation_list.items()))
         connectives = ted_mdb_annotation.objects.filter(file=selected_file_name).values('conn', 'conn2',
-                                                                                        'type').order_by('conn').distinct()
+                                                                                        'type').order_by(
+            'conn').distinct()
         connective_array = prepareConnList(connectives)
 
         result = dict()
@@ -130,7 +132,7 @@ def ted_mdb(request):
         eng_annotations = ted_mdb_annotation.objects.filter(file=selected_eng_file_name)
         eng_annotation_list = dict()
         for a in eng_annotations:
-            eng_annotation_list[a.ann_id] = a.conn + "(" + a.type + ") |" + a.sense1 + "|" + a.sense2
+            eng_annotation_list[a.ann_id] = a.conn + " (" + a.type + ") |" + a.sense1 + "|" + a.sense2
 
         result['eng_annotation_list'] = eng_annotation_list
         result['eng_text'] = eng_content
@@ -182,7 +184,7 @@ def ted_mdb_rest(request):
     content = selected_file.raw_file
     annotation_list = dict()
     annotation_list["text"] = content  # change return object
-    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by("connBeg")
+    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by("arg1Beg")
     english_annotation_set = dict()
 
     if '2150' in request.GET['file']:
@@ -222,31 +224,31 @@ def ted_mdb_rest(request):
     if request.method == 'GET' and 'targetType' in request.GET:
         selected_target_types = request.GET['targetType'].split(',');
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
-            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)),sl_file=request.GET['file'])
+            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
         eng_annotation = ted_mdb_annotation.objects.filter(
             reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
             reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
             file=selected_eng_file_name)
-        if(len(eng_annotation) > 0):
+        if (len(eng_annotation) > 0):
             source_equivalent_ids = ted_mdb_alignment.objects.filter(
                 reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
             annotations = ted_mdb_annotation.objects.filter(
                 reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
                 file=selected_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
     else:
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
             reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
-        if(len(eng_equivalent_ids) > 0):
+        if (len(eng_equivalent_ids) > 0):
             eng_annotation = ted_mdb_annotation.objects.filter(
                 reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
                 file=selected_eng_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
 
     for a in annotations:
-        annotation_list[a.ann_id] = a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+        annotation_list[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
     result = dict()
     result['text'] = content
     result['annotation_list'] = annotation_list
@@ -267,13 +269,14 @@ def ted_mdb_get_aligned(request):
                 selected_eng_file_name = "talk_2150_en.txt"
             else:
                 selected_eng_file_name = "talk_2009_en.txt"
-            eng_annotation_list = ted_mdb_annotation.objects.filter(reduce(operator.or_, (Q(ann_id=id.fl_id) for id in eng_eq)),
-                                                               file=selected_eng_file_name)
+            eng_annotation_list = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=id.fl_id) for id in eng_eq)),
+                file=selected_eng_file_name)
             result = dict()
 
             for eng_annotation in eng_annotation_list:
-                result[eng_annotation.ann_id] = eng_annotation.conn + "(" + eng_annotation.type + ")" \
-                                               + " | " + eng_annotation.sense1 + " | " + eng_annotation.sense2
+                result[eng_annotation.ann_id] = eng_annotation.conn + " (" + eng_annotation.type + ")" \
+                                                + " | " + eng_annotation.sense1 + " | " + eng_annotation.sense2
 
             return HttpResponse(json.dumps(result))
         except:
@@ -296,7 +299,7 @@ def search_sense_rest(request):
         selected_file_name = file.filename
         content = file.raw_file.read()
         annotation_list = []
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('connBeg')
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
         # SENSE1, !SENSE2
         if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
             selected_senses = request.GET['sense'].replace(" ", "")
@@ -355,7 +358,7 @@ def search_sense_rest(request):
                 reduce(operator.or_, (Q(arg2__contains=k) for k in keyword_list)))
 
         for a in annotations:
-            annotation_list.append(a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
+            annotation_list.append(a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
         result = dict()
         result['text'] = content
         result['annotation_list'] = annotation_list
@@ -389,7 +392,8 @@ def search_page_rest(request):
             result = dict()
             result['text'] = file.raw_file.read()
             for a in annotations_array[file.id]:
-                annotation_list.append(a.conn + "(" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
+                annotation_list.append(
+                    a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + "#" + str(a.id))
             result['annotation_list'] = annotation_list
             all_results[file.id] = result
 
@@ -402,6 +406,9 @@ def search_page_rest(request):
     # ON LOAD
 
     file_array = uploaded_files.objects.all()
+
+    if (file_array.count() == 0):
+        return redirect('upload_annotations.html')
 
     annotations_array = {}
     annotations_dict = {}
