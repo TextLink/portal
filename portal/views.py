@@ -439,14 +439,14 @@ def search_page_rest(request):
         arg1 = pdtbAnnotation.objects.filter(file=selected_file_name).values('arg1',
                                                                              'arg12').distinct()
         for arg in arg1:
-            if arg['arg1'] != 'none': keyword_arg1.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg1']))
-            if arg['arg12'] != 'none': keyword_arg1.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg12']))
+            if arg['arg1'] != 'none': keyword_arg1.extend(re.split(r'[:;,#\"\'?.\s]\s*', arg['arg1']))
+            if arg['arg12'] != 'none': keyword_arg1.extend(re.split(r'[:;,#\"\'?.\s]\s*', arg['arg12']))
 
         arg2 = pdtbAnnotation.objects.filter(file=selected_file_name).values('arg2',
                                                                              'arg22').distinct()
         for arg in arg2:
-            if arg['arg2'] != 'none': keyword_arg2.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg2']))
-            if arg['arg22'] != 'none': keyword_arg2.extend(re.split(r'[:;,\"\'?.\s]\s*', arg['arg22']))
+            if arg['arg2'] != 'none': keyword_arg2.extend(re.split(r'[:;,#\"\'?.\s]\s*', arg['arg2']))
+            if arg['arg22'] != 'none': keyword_arg2.extend(re.split(r'[:;,#\"\'?.\s]\s*', arg['arg22']))
 
     all_senses = set(all_senses)
     all_senses = list(all_senses)
