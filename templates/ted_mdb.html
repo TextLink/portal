@@ -203,13 +203,13 @@
     .search-options-first-langage {
        height: 200px;
        float:left;
-        width:20%;
+        width:30%;
     }
     
     #search-options-target {
        height: 200px;
        float:left;
-        width:80%;
+        width:70%;
         overflow-y:auto;
     }
     #annotation-select{
@@ -337,6 +337,19 @@ File:
 
 <div id="search-options-target">
     In target language:
+<br>
+    <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
+                class='chosen-select'
+                tabindex='11'>
+            {% for sense in senses %}
+                {% if '.' not in sense %}
+                    </optgroup>
+                    <optgroup label="{{ sense }} ">
+                {% endif %}
+                <option value="{{ sense }} ">{{ sense }} </option>
+            {% endfor %}
+        </select>
+<br>
     <form   id="target-checkbox-form">
         <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Explicit">Explicit
         <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Implicit">Implicit

@@ -281,12 +281,9 @@
 
                 //ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
                 ajax_url = ajax_url + '&connective=' + selected_con;
-
-
             }
             if ($("#checkbox-form input:checkbox:checked").length > 0) {
                 ajax_url = ajax_url + '&type=';
-
                 $("input:checkbox[name=discourse_type]:checked").each(function () {
                     ajax_url = ajax_url + $(this).val() + ",";
                 });
@@ -297,8 +294,14 @@
                     ajax_url = ajax_url + $(this).val() + ",";
                 });
             }
+            if ($('#search-options-target').find("#sense-select").val() !== null) {
+                ajax_url = ajax_url + '&targetSense='+$('#search-options-target').find("#sense-select").val();
+            }
+
+
             if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0
-            && $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").length == 0) {
+            && $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").length == 0
+            && $('#search-options-target').find("#sense-select").val() === null) {
                 ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
             }
             $.ajax({

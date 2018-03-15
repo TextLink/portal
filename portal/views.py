@@ -221,7 +221,26 @@ def ted_mdb_rest(request):
         annotations = annotations.filter(
             reduce(operator.or_, (Q(type=t) for t in selected_types)))
 
-    if request.method == 'GET' and 'targetType' in request.GET:
+    if 'targetSense'  in request.GET and 'targetType' in request.GET:
+        selected_target_types = request.GET['targetType'].split(',');
+        selected_target_senses = request.GET['targetSense'].split(',');
+        eng_equivalent_ids = ted_mdb_alignment.objects.filter(
+            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
+        eng_annotation = ted_mdb_annotation.objects.filter(
+            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
+            reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_target_senses)),
+            reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
+            file=selected_eng_file_name)
+        if (len(eng_annotation) > 0):
+            source_equivalent_ids = ted_mdb_alignment.objects.filter(
+                reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
+            annotations = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
+                file=selected_file_name)
+            for a in eng_annotation:
+                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+
+    elif request.method == 'GET' and 'targetType' in request.GET:
         selected_target_types = request.GET['targetType'].split(',');
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
             reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
@@ -237,7 +256,25 @@ def ted_mdb_rest(request):
                 file=selected_file_name)
             for a in eng_annotation:
                 english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
-    else:
+
+    elif request.method == 'GET' and 'targetSense' in request.GET:
+        selected_target_senses = request.GET['targetSense'].split(',');
+        eng_equivalent_ids = ted_mdb_alignment.objects.filter(
+            reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
+        eng_annotation = ted_mdb_annotation.objects.filter(
+            reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
+            reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_target_senses)),
+            file=selected_eng_file_name)
+        if (len(eng_annotation) > 0):
+            source_equivalent_ids = ted_mdb_alignment.objects.filter(
+                reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
+            annotations = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
+                file=selected_file_name)
+            for a in eng_annotation:
+                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+
+    if 'targetSense' not in request.GET and 'targetType' not in request.GET:
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
             reduce(operator.or_, (Q(sl_id=a.ann_id) for a in annotations)), sl_file=request.GET['file'])
         if (len(eng_equivalent_ids) > 0):
