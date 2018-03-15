@@ -16,7 +16,25 @@
         $(select_name).val('').trigger('chosen:updated');
     }
 
+    function resetWithoutFileLoad()
+    {
+        $("[name='sense1List[]").val('').trigger('chosen:updated');
+        $("[name='sense2List[]").val('').trigger('chosen:updated');
+        $("#conn-select").val('').trigger('chosen:updated');
+
+        $('#MS').attr('checked', false);
+        $('p').hide();
+        $("#select-operator").hide();
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+        $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
+    }
+
     function fileLoad() {
+        resetWithoutFileLoad();
         $.ajax({
             url: 'http://localhost:8000/ted_mdb?file=' + $("#file-select").val(),
             type: 'GET',
@@ -28,13 +46,13 @@
                 var content = data["text"];
 
                 content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#first_language').find("#txt").html(JSON.stringify(content));
+                $('#first_language').find("#txt").html(content);
 
                 // fill ANNOTATION SELECT
                 var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>";
                 var count = 1;
                 $.each(annotation_data, function (key, value) {
-                    annotation_list += '<option value=' + key + '>' + key + '- ' + value + '</option>';
+                    annotation_list += '<option value=' + key + '>' + count + ' - ' + value + '</option>';
                     count += 1;
                 });
                 annotation_list += '</select>';
@@ -58,12 +76,12 @@
                 count = 1;
                 var eng_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>";
                 $.each(eng_annotation_data, function (key, value) {
-                    eng_annotation_list += '<option value=' + key + '>' + key + '- ' + value + '</option>';
+                    eng_annotation_list += '<option value=' + key + '>' + count + ' - ' + value + '</option>';
                     count += 1;
                 });
                 eng_annotation_list += '</select>';
                 eng_content = eng_content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
-                $('#second_language').find("#txt").html(JSON.stringify(eng_content));
+                $('#second_language').find("#txt").html(eng_content);
                 $('#second_language').find('#annotation-select').html(eng_annotation_list);
                 $('#second_language').find('#info').text(count - 1 + " relations have been found.");
 
@@ -86,23 +104,20 @@
         $("input:checkbox[name=discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });
+        $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
     }
 
     function languageLoad() {
 
-        if ($("#language-select").val().trim() == "English") {
-            $("#second-language-select").show();
-        }
-        else {
-            $("#second-language-select").hide();
-        }
         $.ajax({
             url: 'http://localhost:8000/ted_mdb?language=' + $("#language-select").val(),
             type: 'GET',
             crossDomain: true,
             dataType: 'json',
             success: function (data) {
-                var file_select_data = "<select id='file-select' name='file-select' method='get'>"
+                var file_select_data = "<select id='file-select' name='file-select' method='get'>";
                 $.each(data, function (key, value) {
                     file_select_data += '<option value=' + value + '>' + value + '</option>';
                 });
@@ -134,6 +149,23 @@
         });
     }
 
+
+    function setSelect() {
+    var desiredOption = $("#selectVal").val();
+    if (desiredOption == '') {
+        $("#selectVal").focus();
+        return false;
+    }
+    var hasOption = $('#mySelect option[value="' + desiredOption + '"]');
+    if (hasOption.length == 0) {
+        alert('No such option');
+    } else {
+        $('#mySelect').val(desiredOption);
+    }
+    $("#selectVal").select();
+}
+
+
     function findAligned() {
         $.ajax({
             url: 'http://localhost:8000/ted_mdb_get_aligned?annotation=' + $('#first_language').find('#annotation-select').val() + "&" + "file=" + $("#file-select").val(),
@@ -143,18 +175,28 @@
             success: function (data) {
                 var eng_key = ""
                 $.each(data, function (key, value) {
-                    eng_key = key
+                            eng_key = key;
                 });
                 $('#second_language').find('#annotation-select').val(eng_key);
-
                 $('#second_language').find('#annotation-select').change();
             },
             error: function () {
+               var text = stripHtml( $('#second_language').find("#txt").text());
+              content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+
+               $('#second_language').find("#txt").html(content);
                 alert('This annotation does not have a counterpart in English!');
             },
         });
     }
-
+    function stripHtml(html){
+        // Create a new div element
+        var temporalDivElement = document.createElement("div");
+        // Set the HTML content with the providen
+        temporalDivElement.innerHTML = html;
+        // Retrieve the text property of the element (cross-browser support)
+        return temporalDivElement.textContent || temporalDivElement.innerText || "";
+    }
     function autoScroll() {
         if ($('#second_language').find('#annotation-select').length) {
             $('#second_language').find('#annotation-select').focus().find(":selected")[0].scrollIntoView();
@@ -162,8 +204,10 @@
     }
 
     function highlight() {
+
+        var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val(),
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val()+"&file="+file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
@@ -179,16 +223,17 @@
     }
 
     function highlightSecond() {
+                var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
+
 
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val(),
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val()+"&file="+file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
             success: function (data) {
                 $('#second_language').find("#txt").html(data);
                 $('#second_language').find("#txt").getElementById("anno").scrollIntoView();
-
             },
             error: function () {
                 alert(' highlight2 Failed!');
@@ -208,6 +253,7 @@
 
     $(document).ready(function () {
         $("#file-select").change(fileLoad);
+        fileLoad(); // düzelt, chosen hatası
         $("#language-select").change(languageLoad);
         $("#second-language-select").change(secondLanguageLoad);
 
@@ -215,19 +261,28 @@
         $('#second_language').find('#annotation-select').on('change', annotationList2Change);
 
         $("[name='reset']").click(reset);
+
         //sense search
         $("[name='search-button']").click(function () {
             var ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
 
             if ($("[name='sense1List[]']").val() !== null) {
-                ajax_url = ajax_url + '&sense=' + $("#sense-select").val();
+                var sense =encodeURIComponent($("#sense-select").val());
+                ajax_url = ajax_url + '&sense=' + sense;
             }
             if ($("[name='sense2List[]']").val() !== null) {
                 ajax_url = ajax_url + '&sense2=' + $("[name='sense2List[]']").val();
                 ajax_url = ajax_url + '&op=' + $("[name='operator']").val();
             }
             if ($("#conn-select").val() !== null) {
-                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+
+                var selected_con = $("#conn-select").find('option:selected').text();
+                selected_con = selected_con.substring(0, selected_con.indexOf("("));
+
+                //ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+                ajax_url = ajax_url + '&connective=' + selected_con;
+
+
             }
             if ($("#checkbox-form input:checkbox:checked").length > 0) {
                 ajax_url = ajax_url + '&type=';
@@ -236,7 +291,14 @@
                     ajax_url = ajax_url + $(this).val() + ",";
                 });
             }
-            if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0) {
+            if ($('#search-options-target').find("#target-checkbox-form input:checkbox:checked").length > 0) {
+                ajax_url = ajax_url + '&targetType=';
+                $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").each(function () {
+                    ajax_url = ajax_url + $(this).val() + ",";
+                });
+            }
+            if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0
+            && $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").length == 0) {
                 ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
             }
             $.ajax({
@@ -247,10 +309,22 @@
                 success: function (data) {
                     var content = data["text"];
                     var annotation_data = data["annotation_list"]
+                    var english_annotation_data = data["eng_annotation_list"]
+
+                    if(Object.keys(english_annotation_data).length == 0 && Object.keys(annotation_data).length > 0)
+                    {
+                        alert("These relations do not have any English counterpart!")
+                    }
+
+                    else if(Object.keys(english_annotation_data).length == 0)
+                    {
+                        alert("There is not any such relation pair.")
+                    }
+
                     content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                     var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
-                    $.each(data, function (key, value) {
+                    $.each(annotation_data, function (key, value) {
                         if (key.indexOf("text") < 0) {
                             annotation_list += '<option value=' + key + '>' + count + '- ' + value + '</option>';
                             count += 1;
@@ -259,10 +333,24 @@
                     annotation_list += '</select>';
                     $('#first_language').find('#info').text(count - 1 + " relations have been found.");
                     $('#first_language').find('#annotation-select').html(annotation_list);
-                    $('#first_language').find("#txt").html(JSON.stringify(content));
+                    $('#first_language').find("#txt").html(content);
+
+
+                    var english_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
+                    var count = 1;
+                    $.each(english_annotation_data, function (key, value) {
+                        if (key.indexOf("text") < 0) {
+                            english_annotation_list += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+                            count += 1;
+                        }
+                    });
+                    english_annotation_list += '</select>';
+                    $('#second_language').find('#info').text(count - 1 + " relations have been found.");
+                    $('#second_language').find('#annotation-select').html(english_annotation_list);
+
                 },
                 error: function () {
-                    alert('Failed!');
+                    alert('No such DR could be found!');
                 },
             });
             // DIMLEX AJAX REQUEST
@@ -297,8 +385,7 @@
             }
             // DIMLEX AJAX REQUEST
         });
-    })
-    ;
+    });
 </script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
@@ -307,8 +394,8 @@
 <script type='text/javascript'>
     window.onload = function () {
         $(".chosen-select").chosen({
-                            width: '250px',
-                no_results_text: "Oops, nothing found!"
+            width: '250px',
+            no_results_text: "Oops, nothing found!",
             }
         );
         $('p').hide();
@@ -321,8 +408,6 @@
         $("#select-operator").val("none");
 
 
-        $('t').hide();
-        $('.search-options-first-langage').css('width','100%');
         $('#MS').click(function () {
                 //this.form.submit();
                 if ($(this).is(':checked')) {
@@ -339,18 +424,6 @@
             }
         );
 
-        $('#MLS').click(function () {
-                //this.form.submit();
-                if ($(this).is(':checked')) {
-                    $('t').show();
-                    $('.search-options-first-langage').css('width','50%');
-                }
-                else {
-                    $('t').hide();
-                    $('.search-options-first-langage').css('width','100%');
-                }
-            }
-        );
     }
 </script>
 

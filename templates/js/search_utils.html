@@ -67,11 +67,14 @@
         $("[name='sense2List[]").val('').trigger('chosen:updated');
         $("#conn-select").val('').trigger('chosen:updated');
 
-        $('#MS').attr('checked', false); // Checks it
+        $('#MS').attr('checked', false);
         $('p').hide();
         $("#select-operator").hide();
         $("#keyword-arg1-select").val('').trigger("");
         $("#keyword-arg2-select").val('').trigger("");
+        $("input:checkbox[name=discourse_type]:checked").each(function () {
+            $(this).prop('checked', false);
+        });
         $("input:checkbox[name=discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });
@@ -243,12 +246,7 @@
                     alert('No information found in Dimlex for ' + $("#conn-select").val());
                 },
             });
-            $('html, body').animate({
-                scrollTop: $(window).scrollTop() + 400
-            }).delay(300);
-            $('html, body').animate({
-                scrollTop: $(window).scrollTop() - 400
-            });
+
         }
         // DIMLEX AJAX REQUEST
     }

@@ -192,30 +192,29 @@
     .file-div {
         float:left;
         width:15%;
-        overflow:hidden;
+        overflow:auto;
     }
     .language-div {
        float:left;
         width:15%;
-        overflow:hidden;
+        overflow:auto;
     }
 
     .search-options-first-langage {
-        height: 200px;
+       height: 200px;
        float:left;
-        width:50%;
-        overflow:hidden;
+        width:20%;
     }
-
-
-    .search-options-target {
-                height: 200px;
-
+    
+    #search-options-target {
+       height: 200px;
        float:left;
-        width:50%;
-        overflow:hidden;
+        width:80%;
+        overflow-y:auto;
     }
-
+    #annotation-select{
+        max-width: 200px;
+    }
 
 
 </style>
@@ -265,14 +264,7 @@ File:
         {% endfor %}
     </select>
     <br>
-    <select id='second-language-select' name='second-language-select' method="get" hidden>
-        {% for lang in all_languages %}
-            {% if 'Eng' not in lang.language %}
-                <option value="{{ lang.language }} ">{{ lang.language }}</option>
-            {% endif %}
 
-        {% endfor %}
-    </select>
 </div>
 </div>
 <button type="button" class="accordion" data-toggle="collapse" data-target="#se-demo">Search Menu</button>
@@ -321,61 +313,38 @@ File:
         Multiple Sense Search
         <input type="hidden" id="MS" name="MS" value="0"/>
     </div>
-    <br>
     Select connective:
     <br>
+      <div style="z-index:1000;">
+
     <select name='connectiveList[]' id='conn-select' data-placeholder='Connective' multiple class='chosen-select'
             tabindex='11'>
         {% for key, value in connective_array.items %}
-            <option value="{{ key }} "> {{ key }} </option>
+            <option value="{{ key }} "> {{ value }} </option>
         {% endfor %}
     </select>
-    <form class="alert alert-info" id="checkbox-form">
+
+      </div>
+    <form  id="checkbox-form">
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
         <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
         <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
     </form>
-{% comment %}
-    <div class="Multiple-Language-Search">
-        <input type="checkbox" id="MLS" name="MLS" value="1">
-        Multiple Language Search
-        <input type="hidden" id="MLS" name="MLS" value="0"/>
-    </div>
-    {% endcomment %}
-</div>
-
-
-<t>
-<div class="search-options-target">
-    Select Sense in Target Language:
-<br>
-    <div class="teset">
-        <select name='sense1List[]' id='sense-select' data-placeholder='First Semantic Class' multiple
-                class='chosen-select'
-                tabindex='11'>
-            {% for sense in senses %}
-                {% if '.' not in sense %}
-                    </optgroup>
-                    <optgroup label="{{ sense }} ">
-                {% endif %}
-                <option value="{{ sense }} ">{{ sense }} </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <br>
-    <br>
-    <form class="alert alert-info" id="checkbox-form">
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="Explicit">Explicit
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="Implicit">Implicit
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="AltLex">AltLex
-        <input type="checkbox" name="discourse_type" id="discourse_type" value="EntRel">EntRel
-    </form>
-</div>
-</t>
-    <button class="button" name="search-button">Search</button>
+<button class="button" name="search-button">Search</button>
     <button name="reset">Reset</button>
+</div>
+
+<div id="search-options-target">
+    In target language:
+    <form   id="target-checkbox-form">
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Explicit">Explicit
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="Implicit">Implicit
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="AltLex">AltLex
+        <input type="checkbox" name="target_discourse_type" id="discourse_type" value="EntRel">EntRel
+    </form>
+</div>
+
 </div>
 
 <div class="section" id="first_language">
@@ -402,7 +371,6 @@ File:
                 | {{ ann.sense2 }}</option>
         {% endfor %}
     </select>
-
     <div id='txt' name='out' contenteditable='false'>
         {{ eng_text }}
     </div>
