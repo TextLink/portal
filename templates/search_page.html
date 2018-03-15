@@ -278,6 +278,20 @@
         background-color: dimgrey;
     }
 
+    #delete-div{
+        padding-top: 8px;
+        height: 80px;
+        float:left;
+        width: 70%;
+    }
+    #upload_div{
+                height: 80px;
+
+         float:left;
+        width: 30%;
+
+    }
+
 
 </style>
 <!DOCTYPE html>
@@ -469,8 +483,9 @@
             {% csrf_token %}
             <input type="submit" name="upload-button" value="Upload" style="float:left">
         </form>
-        <br>
-        <br>
+        </div>
+
+    <div id="delete-div">
         Select file to delete:
 
         <select name='deleteFileList[]' id='delete-file-select' data-placeholder='File'
@@ -479,8 +494,7 @@
                 <option value="{{ file.filename }} "> {{ file.filename }} </option>
             {% endfor %}
         </select>
-        <br>
-        <br>
+    <br>
         <button class="button" name="delete-button">Delete</button>
     </div>
 
