@@ -238,6 +238,7 @@ def prepareConnList(connectives):
 def prepareKeyword(keyword):
     keyword_list = []
     keyword_list.append(' ' + keyword + '')
+    keyword_list.append('' + keyword + ' ')
     keyword_list.append(' ' + keyword + ' ')
     keyword_list.append('.' + keyword + ' ')
     keyword_list.append(',' + keyword + ' ')

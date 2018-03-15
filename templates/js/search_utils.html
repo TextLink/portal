@@ -70,8 +70,8 @@
         $('#MS').attr('checked', false); // Checks it
         $('p').hide();
         $("#select-operator").hide();
-        $("#keyword-arg1-select").val('').trigger('chosen:updated');
-        $("#keyword-arg2-select").val('').trigger('chosen:updated');
+        $("#keyword-arg1-select").val('').trigger("");
+        $("#keyword-arg2-select").val('').trigger("");
         $("input:checkbox[name=discourse_type]:checked").each(function () {
             $(this).prop('checked', false);
         });
@@ -133,11 +133,11 @@
             ajax_url = 'http://localhost:8000/upload/search_sense_rest?file=' + $("#file-select").val();
         }
 
-        if ($("#keyword-arg1-select").val() !== null) {
+        if ($("#keyword-arg1-select").val() !== null && $("#keyword-arg1-select").val() !== "") {
             ajax_url = ajax_url + '&keyword-arg1=' + $("#keyword-arg1-select").val();
         }
 
-        if ($("#keyword-arg2-select").val() !== null) {
+        if ($("#keyword-arg2-select").val() !== null && $("#keyword-arg2-select").val() !== "") {
             ajax_url = ajax_url + '&keyword-arg2=' + $("#keyword-arg2-select").val();
         }
 
