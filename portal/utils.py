@@ -93,7 +93,7 @@ def populate_ann_db(file, data, contents, annotation_tool, user_id):
 
             if ann_fields[1] != "":
                 con_index = handle_arg_indices(ann_fields[1])
-                conn = recover_arg(con_index, contents)
+                conn = recover_connective(con_index, contents)
             elif type == "Implicit":
                 con_index = [-1, -1, -1, -1]
                 conn = [ann_fields[7], "none"]
@@ -101,9 +101,9 @@ def populate_ann_db(file, data, contents, annotation_tool, user_id):
                 con_index = [-1, -1, -1, -1]
                 conn = ["", "none"]
             arg1_index = handle_arg_indices(ann_fields[14])
-            arg1 = recover_arg(arg1_index, contents)
+            arg1 = recover_arguments(arg1_index, contents)
             arg2_index = handle_arg_indices(ann_fields[20])
-            arg2 = recover_arg(arg2_index, contents)
+            arg2 = recover_arguments(arg2_index, contents)
             sense1 = ann_fields[8]
             sense2 = ann_fields[9]
             pdtbAnnotation(conn=conn[0], connBeg=con_index[0], connEnd=con_index[1],
@@ -145,7 +145,7 @@ def populate_ann_db_xml(file_name, xml_file, annotation_tool, user_id):
         argument1 = relation.getElementsByTagName("Arg1")[0].getElementsByTagName("Span")
         for i in range(len(argument1)):
             a = smart_unicode(argument1[i].getElementsByTagName("Text")[0].firstChild.data)
-            arg1[i] = a.replace("\n                    ", " ")
+            arg1[i] = '#' + a.replace("\n                    ", " ") + '#'
             arg1Beg[i] = argument1[i].getElementsByTagName("BeginOffset")[0].firstChild.data
             arg1End[i] = argument1[i].getElementsByTagName("EndOffset")[0].firstChild.data
 
@@ -155,7 +155,7 @@ def populate_ann_db_xml(file_name, xml_file, annotation_tool, user_id):
         argument2 = relation.getElementsByTagName("Arg2")[0].getElementsByTagName("Span")
         for i in range(len(argument2)):
             a = smart_unicode(argument2[i].getElementsByTagName("Text")[0].firstChild.data)
-            arg2[i] = a.replace("\n                    ", " ")
+            arg2[i] = '#' + a.replace("\n                    ", " ") + '#'
             arg2Beg[i] = argument2[i].getElementsByTagName("BeginOffset")[0].firstChild.data
             arg2End[i] = argument2[i].getElementsByTagName("EndOffset")[0].firstChild.data
 
@@ -171,7 +171,16 @@ def populate_ann_db_xml(file_name, xml_file, annotation_tool, user_id):
                        ).save()
 
 
-def recover_arg(index, contents):
+def recover_arguments(index, contents):
+    res = ['#' + contents[index[0]:index[1]] + '#']
+    if index[3] != -1:
+        res.append('#' + contents[index[2]:index[3]] + '#')
+    else:
+        res.append("none")
+    return res
+
+
+def recover_connective(index, contents):
     res = [contents[index[0]:index[1]]]
     if index[3] != -1:
         res.append(contents[index[2]:index[3]])
@@ -226,8 +235,8 @@ def prepareConnList(connectives):
     for c in connectives:
         if (c['type'].lower() != 'Explicit'.lower()) and (c['type'].lower() != 'AltLex'.lower()):
             continue
-     #   elif c['conn2'].lower() != 'none':
-            #       conn_array[c['conn'] + " " + c['conn2']] = c['conn'] + " " + c['conn2'] + "(" + c['type'] + ")"
+        #   elif c['conn2'].lower() != 'none':
+        #       conn_array[c['conn'] + " " + c['conn2']] = c['conn'] + " " + c['conn2'] + "(" + c['type'] + ")"
         else:
             conn_array[c['conn']] = c['conn'] + "(" + c['type'] + ")"
 
@@ -237,8 +246,20 @@ def prepareConnList(connectives):
 
 def prepareKeyword(keyword):
     keyword_list = []
-    keyword_list.append(' ' + keyword + '')
-    keyword_list.append('' + keyword + ' ')
+    keyword_list.append(' ' + keyword + '#')
+    keyword_list.append('.' + keyword + '#')
+    keyword_list.append(',' + keyword + '#')
+    keyword_list.append('!' + keyword + '#')
+    keyword_list.append('?' + keyword + '#')
+    keyword_list.append(';' + keyword + '#')
+    keyword_list.append(':' + keyword + '#')
+    keyword_list.append('#' + keyword + ' ')
+    keyword_list.append('#' + keyword + '.')
+    keyword_list.append('#' + keyword + ',')
+    keyword_list.append('#' + keyword + '?')
+    keyword_list.append('#' + keyword + '!')
+    keyword_list.append('#' + keyword + ';')
+    keyword_list.append('#' + keyword + ':')
     keyword_list.append(' ' + keyword + ' ')
     keyword_list.append('.' + keyword + ' ')
     keyword_list.append(',' + keyword + ' ')
