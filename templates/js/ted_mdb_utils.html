@@ -267,7 +267,8 @@
             var ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
 
             if ($("[name='sense1List[]']").val() !== null) {
-                ajax_url = ajax_url + '&sense=' + $("#sense-select").val();
+                var sense =encodeURIComponent($("#sense-select").val());
+                ajax_url = ajax_url + '&sense=' + sense;
             }
             if ($("[name='sense2List[]']").val() !== null) {
                 ajax_url = ajax_url + '&sense2=' + $("[name='sense2List[]']").val();
@@ -310,7 +311,12 @@
                     var annotation_data = data["annotation_list"]
                     var english_annotation_data = data["eng_annotation_list"]
 
-                    if(Object.keys(english_annotation_data).length == 0)
+                    if(Object.keys(english_annotation_data).length == 0 && Object.keys(annotation_data).length > 0)
+                    {
+                        alert("These relations do not have any English counterpart!")
+                    }
+
+                    else if(Object.keys(english_annotation_data).length == 0)
                     {
                         alert("There is not any such relation pair.")
                     }
