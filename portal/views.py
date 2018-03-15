@@ -323,6 +323,9 @@ def ted_mdb_get_aligned(request):
 ####### TED - MDB  #######
 
 
+####### SEARCH ##############
+
+
 def search_sense_rest(request):
     if request.method == 'POST':
         return redirect('upload_annotations.html')
@@ -363,10 +366,14 @@ def search_sense_rest(request):
                     reduce(operator.or_, (Q(sense1__icontains=s) for s in selected_senses)))
                 tmp1 = tmp1.exclude(
                     reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
+                tmp1 = tmp1.exclude(Q(sense2=""))
+
+
                 tmp2 = annotations.filter(
                     reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)))
                 tmp2 = tmp2.exclude(
                     reduce(operator.or_, (Q(sense1__icontains=s2) for s2 in selected_senses2)))
+                tmp2 = tmp2.exclude(Q(sense2=""))
                 annotations = tmp1 | tmp2
 
         # CONN
