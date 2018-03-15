@@ -368,7 +368,6 @@ def search_sense_rest(request):
                     reduce(operator.or_, (Q(sense2__icontains=s2) for s2 in selected_senses2)))
                 tmp1 = tmp1.exclude(Q(sense2=""))
 
-
                 tmp2 = annotations.filter(
                     reduce(operator.or_, (Q(sense2__icontains=s) for s in selected_senses)))
                 tmp2 = tmp2.exclude(
