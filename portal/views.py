@@ -107,7 +107,7 @@ def ted_mdb(request):
         selected_file_name = request.GET['file']
         selected_file = ted_mdb_files.objects.filter(filename=selected_file_name).first()
         content = selected_file.raw_file
-        annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
+        annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
         annotation_list = dict()
 
         for a in annotations:
@@ -151,7 +151,7 @@ def ted_mdb(request):
     selected_file_content = first_doc.raw_file
     documents = ted_mdb_files.objects.filter(language=selected_language)
 
-    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
+    annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
     senses = ted_mdb_annotation.objects.filter(file=selected_file_name).values('sense1', 'sense2').distinct()
     connectives = ted_mdb_annotation.objects.filter(file=selected_file_name).values('conn', 'conn2', 'type').distinct()
     connective_array = prepareConnList(connectives)
@@ -345,7 +345,7 @@ def search_sense_rest(request):
         selected_file_name = file.filename
         content = file.raw_file.read()
         annotation_list = []
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
         # SENSE1, !SENSE2
         if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
             selected_senses = request.GET['sense'].replace(" ", "")
@@ -436,7 +436,7 @@ def search_page_rest(request):
             annotation_list = []
             selected_file_name = file.filename
             file_ids.append(file.id)
-            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
+            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
             annotations_dict[selected_file_name] = annotations_array[file.id]
             result = dict()
             result['text'] = file.raw_file.read()
@@ -472,7 +472,7 @@ def search_page_rest(request):
     for file in file_array:
         selected_file_name = file.filename
         file_ids.append(file.id)
-        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg1Beg')
+        annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
         annotations_dict[selected_file_name] = annotations_array[file.id]
         senses = pdtbAnnotation.objects.filter(file=selected_file_name).values('sense1',
                                                                                'sense2').distinct()

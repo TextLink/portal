@@ -285,7 +285,7 @@
                 var selected_con = $("#conn-select").find('option:selected').text();
                 selected_con = selected_con.substring(0, selected_con.indexOf("("));
 
-                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+                ajax_url = ajax_url + '&connective=' + $("#conn-select").find('option:selected').text();
                 //ajax_url = ajax_url + '&connective=' + selected_con;
             }
             if ($("#checkbox-form input:checkbox:checked").length > 0) {
