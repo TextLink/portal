@@ -232,7 +232,7 @@ def ted_mdb_rest(request):
             reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
             reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_target_senses)),
             reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
-            file=selected_eng_file_name)
+            file=selected_eng_file_name).order_by('arg2Beg')
         if (len(eng_annotation) > 0):
             source_equivalent_ids = ted_mdb_alignment.objects.filter(
                 reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
@@ -250,7 +250,7 @@ def ted_mdb_rest(request):
         eng_annotation = ted_mdb_annotation.objects.filter(
             reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
             reduce(operator.or_, (Q(type=t) for t in selected_target_types)),
-            file=selected_eng_file_name)
+            file=selected_eng_file_name).order_by('arg2Beg')
         if (len(eng_annotation) > 0):
             source_equivalent_ids = ted_mdb_alignment.objects.filter(
                 reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
@@ -268,7 +268,7 @@ def ted_mdb_rest(request):
         eng_annotation = ted_mdb_annotation.objects.filter(
             reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
             reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_target_senses)),
-            file=selected_eng_file_name)
+            file=selected_eng_file_name).order_by('arg2Beg')
         if (len(eng_annotation) > 0):
             source_equivalent_ids = ted_mdb_alignment.objects.filter(
                 reduce(operator.or_, (Q(fl_id=a.ann_id) for a in eng_annotation)), sl_file=request.GET['file'])
@@ -285,7 +285,7 @@ def ted_mdb_rest(request):
         if (len(eng_equivalent_ids) > 0):
             eng_annotation = ted_mdb_annotation.objects.filter(
                 reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
-                file=selected_eng_file_name)
+                file=selected_eng_file_name).order_by('arg2Beg')
             for a in eng_annotation:
                 english_annotation_set.append(
                     a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
