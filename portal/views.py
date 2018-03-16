@@ -130,9 +130,9 @@ def ted_mdb(request):
         selected_eng_file = ted_mdb_files.objects.filter(filename=selected_eng_file_name).first()
         eng_content = selected_eng_file.raw_file
         eng_annotations = ted_mdb_annotation.objects.filter(file=selected_eng_file_name)
-        eng_annotation_list = dict()
+        eng_annotation_list = []
         for a in eng_annotations:
-            eng_annotation_list[a.ann_id] = a.conn + " (" + a.type + ") |" + a.sense1 + "|" + a.sense2
+            eng_annotation_list.append(a.conn + " (" + a.type + ") |" + a.sense1 + "|" + a.sense2 + '#' + a.ann_id)
 
         result['eng_annotation_list'] = eng_annotation_list
         result['eng_text'] = eng_content
@@ -182,10 +182,12 @@ def ted_mdb_rest(request):
     selected_file_name = request.GET['file']
     selected_file = ted_mdb_files.objects.filter(filename=selected_file_name).first()
     content = selected_file.raw_file
-    annotation_list = dict()
-    annotation_list["text"] = content  # change return object
+    annotation_list = []
+    # annotation_list = dict()
+    # annotation_list["text"] = content  # change return object
     annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by("arg1Beg")
-    english_annotation_set = dict()
+    # english_annotation_set = dict()
+    english_annotation_set = []
 
     if '2150' in request.GET['file']:
         selected_eng_file_name = "talk_2150_en.txt"
@@ -221,7 +223,7 @@ def ted_mdb_rest(request):
         annotations = annotations.filter(
             reduce(operator.or_, (Q(type=t) for t in selected_types)))
 
-    if 'targetSense'  in request.GET and 'targetType' in request.GET:
+    if 'targetSense' in request.GET and 'targetType' in request.GET:
         selected_target_types = request.GET['targetType'].split(',');
         selected_target_senses = request.GET['targetSense'].split(',');
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
@@ -238,7 +240,8 @@ def ted_mdb_rest(request):
                 reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
                 file=selected_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set.append(
+                    a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
 
     elif request.method == 'GET' and 'targetType' in request.GET:
         selected_target_types = request.GET['targetType'].split(',');
@@ -255,7 +258,8 @@ def ted_mdb_rest(request):
                 reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
                 file=selected_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set.append(
+                    a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
 
     elif request.method == 'GET' and 'targetSense' in request.GET:
         selected_target_senses = request.GET['targetSense'].split(',');
@@ -272,7 +276,8 @@ def ted_mdb_rest(request):
                 reduce(operator.or_, (Q(ann_id=a.sl_id) for a in source_equivalent_ids)),
                 file=selected_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set.append(
+                    a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
 
     if 'targetSense' not in request.GET and 'targetType' not in request.GET:
         eng_equivalent_ids = ted_mdb_alignment.objects.filter(
@@ -282,10 +287,11 @@ def ted_mdb_rest(request):
                 reduce(operator.or_, (Q(ann_id=a.fl_id) for a in eng_equivalent_ids)),
                 file=selected_eng_file_name)
             for a in eng_annotation:
-                english_annotation_set[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+                english_annotation_set.append(
+                    a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
 
     for a in annotations:
-        annotation_list[a.ann_id] = a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2
+        annotation_list.append(a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
     result = dict()
     result['text'] = content
     result['annotation_list'] = annotation_list

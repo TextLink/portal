@@ -16,8 +16,7 @@
         $(select_name).val('').trigger('chosen:updated');
     }
 
-    function resetWithoutFileLoad()
-    {
+    function resetWithoutFileLoad() {
         $("[name='sense1List[]").val('').trigger('chosen:updated');
         $("[name='sense2List[]").val('').trigger('chosen:updated');
         $("#conn-select").val('').trigger('chosen:updated');
@@ -75,10 +74,15 @@
                 var eng_annotation_data = data["eng_annotation_list"];
                 count = 1;
                 var eng_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>";
-                $.each(eng_annotation_data, function (key, value) {
-                    eng_annotation_list += '<option value=' + key + '>' + count + ' - ' + value + '</option>';
-                    count += 1;
-                });
+
+                for (var item in eng_annotation_data) {
+                    var res = eng_annotation_data[item];
+                    var split_res = res.split("#");
+                    if (split_res[1].indexOf("text") < 0) {
+                        eng_annotation_list += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
+                        count += 1;
+                    }
+                }
                 eng_annotation_list += '</select>';
                 eng_content = eng_content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                 $('#second_language').find("#txt").html(eng_content);
@@ -151,19 +155,19 @@
 
 
     function setSelect() {
-    var desiredOption = $("#selectVal").val();
-    if (desiredOption == '') {
-        $("#selectVal").focus();
-        return false;
+        var desiredOption = $("#selectVal").val();
+        if (desiredOption == '') {
+            $("#selectVal").focus();
+            return false;
+        }
+        var hasOption = $('#mySelect option[value="' + desiredOption + '"]');
+        if (hasOption.length == 0) {
+            alert('No such option');
+        } else {
+            $('#mySelect').val(desiredOption);
+        }
+        $("#selectVal").select();
     }
-    var hasOption = $('#mySelect option[value="' + desiredOption + '"]');
-    if (hasOption.length == 0) {
-        alert('No such option');
-    } else {
-        $('#mySelect').val(desiredOption);
-    }
-    $("#selectVal").select();
-}
 
 
     function findAligned() {
@@ -175,21 +179,22 @@
             success: function (data) {
                 var eng_key = ""
                 $.each(data, function (key, value) {
-                            eng_key = key;
+                    eng_key = key;
                 });
                 $('#second_language').find('#annotation-select').val(eng_key);
                 $('#second_language').find('#annotation-select').change();
             },
             error: function () {
-               var text = stripHtml( $('#second_language').find("#txt").text());
-              content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
+                var text = stripHtml($('#second_language').find("#txt").text());
+                content = $('#second_language').find("#txt").text().replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
 
-               $('#second_language').find("#txt").html(content);
+                $('#second_language').find("#txt").html(content);
                 alert('This annotation does not have a counterpart in English!');
             },
         });
     }
-    function stripHtml(html){
+
+    function stripHtml(html) {
         // Create a new div element
         var temporalDivElement = document.createElement("div");
         // Set the HTML content with the providen
@@ -197,6 +202,7 @@
         // Retrieve the text property of the element (cross-browser support)
         return temporalDivElement.textContent || temporalDivElement.innerText || "";
     }
+
     function autoScroll() {
         if ($('#second_language').find('#annotation-select').length) {
             $('#second_language').find('#annotation-select').focus().find(":selected")[0].scrollIntoView();
@@ -205,9 +211,9 @@
 
     function highlight() {
 
-        var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
+        var file = $("#file-select").val().substring($("#file-select").val().indexOf("_") + 1, $("#file-select").val().lastIndexOf("_"));
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val()+"&file="+file,
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#first_language').find("#annotation-select").val() + "&file=" + file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
@@ -223,11 +229,11 @@
     }
 
     function highlightSecond() {
-                var file = $("#file-select").val().substring($("#file-select").val().indexOf("_")+1, $("#file-select").val().lastIndexOf("_"));
+        var file = $("#file-select").val().substring($("#file-select").val().indexOf("_") + 1, $("#file-select").val().lastIndexOf("_"));
 
 
         $.ajax({
-            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val()+"&file="+file,
+            url: "http://localhost:8000/highlight_rest?ted_mdb_annotation=" + $('#second_language').find('#annotation-select').val() + "&file=" + file,
             type: 'GET',
             crossDomain: true,
             dataType: 'text',
@@ -267,7 +273,7 @@
             var ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
 
             if ($("[name='sense1List[]']").val() !== null) {
-                var sense =encodeURIComponent($("#sense-select").val());
+                var sense = encodeURIComponent($("#sense-select").val());
                 ajax_url = ajax_url + '&sense=' + sense;
             }
             if ($("[name='sense2List[]']").val() !== null) {
@@ -279,8 +285,8 @@
                 var selected_con = $("#conn-select").find('option:selected').text();
                 selected_con = selected_con.substring(0, selected_con.indexOf("("));
 
-                //ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
-                ajax_url = ajax_url + '&connective=' + selected_con;
+                ajax_url = ajax_url + '&connective=' + $("#conn-select").val();
+                //ajax_url = ajax_url + '&connective=' + selected_con;
             }
             if ($("#checkbox-form input:checkbox:checked").length > 0) {
                 ajax_url = ajax_url + '&type=';
@@ -295,13 +301,13 @@
                 });
             }
             if ($('#search-options-target').find("#sense-select").val() !== null) {
-                ajax_url = ajax_url + '&targetSense='+$('#search-options-target').find("#sense-select").val();
+                ajax_url = ajax_url + '&targetSense=' + $('#search-options-target').find("#sense-select").val();
             }
 
 
             if ($("#sense-select").val() === null && $("#conn-select").val() === null && $("#checkbox-form input:checkbox:checked").length == 0
-            && $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").length == 0
-            && $('#search-options-target').find("#sense-select").val() === null) {
+                && $('#search-options-target').find("input:checkbox[name=target_discourse_type]:checked").length == 0
+                && $('#search-options-target').find("#sense-select").val() === null) {
                 ajax_url = 'http://localhost:8000/ted_mdb_rest?file=' + $("#file-select").val();
             }
             $.ajax({
@@ -314,25 +320,27 @@
                     var annotation_data = data["annotation_list"]
                     var english_annotation_data = data["eng_annotation_list"]
 
-                    if(Object.keys(english_annotation_data).length == 0 && Object.keys(annotation_data).length > 0)
-                    {
+                    if (Object.keys(english_annotation_data).length == 0 && Object.keys(annotation_data).length > 0) {
                         alert("These relations do not have any English counterpart!")
                     }
 
-                    else if(Object.keys(english_annotation_data).length == 0)
-                    {
+                    else if (Object.keys(english_annotation_data).length == 0) {
                         alert("There is not any such relation pair.")
                     }
 
                     content = content.replace(/[\n]/g, "<br />").replace(/[\r]/g, "");
                     var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
-                    $.each(annotation_data, function (key, value) {
-                        if (key.indexOf("text") < 0) {
-                            annotation_list += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+
+                    for (var item in annotation_data) {
+                        var res = annotation_data[item];
+                        var split_res = res.split("#");
+                        if (split_res[1].indexOf("text") < 0) {
+                            annotation_list += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
                             count += 1;
                         }
-                    });
+                    }
+
                     annotation_list += '</select>';
                     $('#first_language').find('#info').text(count - 1 + " relations have been found.");
                     $('#first_language').find('#annotation-select').html(annotation_list);
@@ -341,12 +349,16 @@
 
                     var english_annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>\n";
                     var count = 1;
-                    $.each(english_annotation_data, function (key, value) {
-                        if (key.indexOf("text") < 0) {
-                            english_annotation_list += '<option value=' + key + '>' + count + '- ' + value + '</option>';
+
+                    for (var item in english_annotation_data) {
+                        var res = english_annotation_data[item];
+                        var split_res = res.split("#");
+                        if (split_res[1].indexOf("text") < 0) {
+                            english_annotation_list += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
                             count += 1;
                         }
-                    });
+                    }
+
                     english_annotation_list += '</select>';
                     $('#second_language').find('#info').text(count - 1 + " relations have been found.");
                     $('#second_language').find('#annotation-select').html(english_annotation_list);
@@ -397,8 +409,8 @@
 <script type='text/javascript'>
     window.onload = function () {
         $(".chosen-select").chosen({
-            width: '250px',
-            no_results_text: "Oops, nothing found!",
+                width: '250px',
+                no_results_text: "Oops, nothing found!",
             }
         );
         $('p').hide();
