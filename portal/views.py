@@ -108,11 +108,10 @@ def ted_mdb(request):
         selected_file = ted_mdb_files.objects.filter(filename=selected_file_name).first()
         content = selected_file.raw_file
         annotations = ted_mdb_annotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
-        annotation_list = dict()
-
+      #  annotation_list = dict()
+        annotation_list = []
         for a in annotations:
-            annotation_list[a.ann_id] = a.conn + " (" + a.type + ") |" + a.sense1 + "|" + a.sense2
-        annotation_list = collections.OrderedDict(sorted(annotation_list.items()))
+            annotation_list.append(a.conn + " (" + a.type + ")" + " | " + a.sense1 + " | " + a.sense2 + '#' + a.ann_id)
         connectives = ted_mdb_annotation.objects.filter(file=selected_file_name).values('conn', 'conn2',
                                                                                         'type').order_by(
             'conn').distinct()
@@ -300,7 +299,7 @@ def ted_mdb_rest(request):
     return HttpResponse(json.dumps(result))
 
 
-####### ALIGNMENT  #######
+####### ALIGNMENT #######
 
 def ted_mdb_get_aligned(request):
     if request.method == 'GET' and 'annotation' in request.GET and 'file' in request.GET:

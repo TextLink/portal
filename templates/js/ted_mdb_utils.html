@@ -50,10 +50,15 @@
                 // fill ANNOTATION SELECT
                 var annotation_list = "<select name='annotationList' id='annotation-select' multiple size='30'>";
                 var count = 1;
-                $.each(annotation_data, function (key, value) {
-                    annotation_list += '<option value=' + key + '>' + count + ' - ' + value + '</option>';
-                    count += 1;
-                });
+                for (var item in annotation_data) {
+
+                    var res = annotation_data[item];
+                    var split_res = res.split("#");
+                    if (split_res[1].indexOf("text") < 0) {
+                        annotation_list += '<option value=' + split_res[1] + '>' + count + '- ' + split_res[0] + '</option>';
+                        count += 1;
+                    }
+                }
                 annotation_list += '</select>';
                 $('#first_language').find('#annotation-select').html(annotation_list);
                 $('#first_language').find('#info').text(count - 1 + " relations have been found.");
@@ -223,7 +228,7 @@
                 //   alert("highlight1" + $('#first_language').find("#annotation-select").val())
             },
             error: function () {
-                alert(' highlight1 Failed!');
+                alert('Please select only one connective!');
             },
         });
     }
