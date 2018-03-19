@@ -301,6 +301,29 @@ def ted_mdb_rest(request):
 
 ####### ALIGNMENT #######
 
+def ted_mdb_get_aligned_english(request):
+    if request.method == 'GET' and 'english_annotation' in request.GET and 'file' in request.GET:
+        annotation_id = request.GET['english_annotation']
+        file_name = request.GET['file']
+        try:
+            if '2150' in file_name:
+                selected_eng_file_name = "talk_2150_en.txt"
+            else:
+                selected_eng_file_name = "talk_2009_en.txt"
+            src_eq = ted_mdb_alignment.objects.filter(fl_id=annotation_id, fl_file=selected_eng_file_name)
+            src_annotation_list = ted_mdb_annotation.objects.filter(
+                reduce(operator.or_, (Q(ann_id=id.sl_id) for id in src_eq)),
+                file=file_name)
+            result = dict()
+
+            for eng_annotation in src_annotation_list:
+                result[eng_annotation.ann_id] = eng_annotation.conn + " (" + eng_annotation.type + ")" \
+                                                + " | " + eng_annotation.sense1 + " | " + eng_annotation.sense2
+
+            return HttpResponse(json.dumps(result))
+        except:
+            pass
+
 def ted_mdb_get_aligned(request):
     if request.method == 'GET' and 'annotation' in request.GET and 'file' in request.GET:
         annotation_id = request.GET['annotation']
@@ -335,7 +358,7 @@ def search_sense_rest(request):
     if request.method == 'POST':
         return redirect('upload_annotations.html')
 
-    file_array = uploaded_files.objects.all()
+    file_array = uploaded_files.objects.filter(user_id=request.session['user_id'])
     all_results = {}
 
     annotations_dict = {}
@@ -344,13 +367,14 @@ def search_sense_rest(request):
         selected_file_name = file.filename
         content = file.raw_file.read()
         annotation_list = []
-        annotations = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
+        annotations = pdtbAnnotation.objects.filter(file=selected_file_name, user_id=request.session['user_id']).order_by('arg2Beg')
         # SENSE1, !SENSE2
         if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' not in request.GET:
             selected_senses = request.GET['sense'].replace(" ", "")
             selected_senses = selected_senses.split(',')
             annotations = annotations.filter(
-                reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses)))
+                reduce(operator.or_, (Q(sense1__icontains=s) | Q(sense2__icontains=s) for s in selected_senses))
+            )
         # SENSE1, SENSE2
         if request.method == 'GET' and 'file' in request.GET and 'sense' in request.GET and 'sense2' in request.GET:
             selected_senses = request.GET['sense'].replace(" ", "")
@@ -382,7 +406,7 @@ def search_sense_rest(request):
 
         # CONN
         if request.method == 'GET' and 'file' in request.GET and "connective" in request.GET:
-            selected_connectives = request.GET['connective'].replace(" ", "")
+            selected_connectives = request.GET['connective']
             selected_connectives = selected_connectives.split(',')
             annotations = annotations.filter(
                 reduce(operator.or_, (Q(conn=c) for c in selected_connectives)))
@@ -421,10 +445,10 @@ def search_sense_rest(request):
 
 # ONLOAD
 def search_page_rest(request):
-    documents = uploaded_files.objects.filter()
+    documents = uploaded_files.objects.filter(user_id=request.session['user_id'])
 
     if request.method == 'GET' and 'reset' in request.GET:
-        file_array = uploaded_files.objects.all()
+        file_array = uploaded_files.objects.filter(user_id=request.session['user_id'])
 
         all_results = dict()
         annotations_array = {}
@@ -435,7 +459,7 @@ def search_page_rest(request):
             annotation_list = []
             selected_file_name = file.filename
             file_ids.append(file.id)
-            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name).order_by('arg2Beg')
+            annotations_array[file.id] = pdtbAnnotation.objects.filter(file=selected_file_name,user_id=request.session['user_id']).order_by('arg2Beg')
             annotations_dict[selected_file_name] = annotations_array[file.id]
             result = dict()
             result['text'] = file.raw_file.read()
@@ -453,7 +477,7 @@ def search_page_rest(request):
 
     # ON LOAD
 
-    file_array = uploaded_files.objects.all()
+    file_array = uploaded_files.objects.filter(user_id=request.session['user_id'])
 
     if (file_array.count() == 0):
         return redirect('upload_annotations.html')
